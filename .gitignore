@@ -1,0 +1,30 @@
+# Arquivo gerado em 18 de junho de 2025
+
+# Ignora a pasta do ambiente virtual, que contém as bibliotecas instaladas.
+.venv/
+venv/
+env/
+
+# Arquivos de Cache do Python (Python Cache)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de IDEs e Editores (IDEs and Editors)
+.vscode/
+.idea/
+
+# Arquivos de Sistema Operacional (Operating System)
+.DS_Store
+Thumbs.db
+
+# Arquivo de Segredos e Configurações Locais
+.env
+
+# Arquivos de log que podem ser gerados durante a execução ou debug.
+*.log
+
+# Arquivos de Banco de Dados Locais
+*.db
+*.sqlite3
