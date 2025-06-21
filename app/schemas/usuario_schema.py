@@ -6,7 +6,7 @@ class UsuarioBase(BaseModel):
     cpf: str
     nome: str
     matricula: int
-    senha: str
+    email: str
     id_departamento: int
 
 class DiscenteBase(UsuarioBase):
@@ -18,3 +18,30 @@ class DocenteBase(UsuarioBase):
     especialidade: str
     permissao_validacao: bool
     idAvalia: Optional[int] = None
+
+class UsuarioCreate(UsuarioBase):
+    senha: str
+
+class DiscenteCreate(UsuarioCreate, DiscenteBase):
+    pass 
+
+class DocenteCreate(UsuarioCreate, DocenteBase):
+    pass
+
+class DiscenteRead(UsuarioBase, DiscenteBase):
+    pass
+
+class Docente(UsuarioBase, DocenteBase):
+    pass
+
+class DiscenteUpdate(BaseModel):
+    nome: Optional[str] = None
+    email: Optional[str] = None
+    status: Optional[str] = None
+    coeficiente_rendimento: Optional[Decimal] = None
+
+class DocenteUpdate(BaseModel):
+    nome: Optional[str] = None
+    email: Optional[str] = None
+    especialidade: Optional[str] = None
+    permissao_validacao: Optional[bool] = None
