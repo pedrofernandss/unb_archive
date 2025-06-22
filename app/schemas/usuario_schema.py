@@ -22,16 +22,16 @@ class DocenteBase(UsuarioBase):
 class UsuarioCreate(UsuarioBase):
     senha: str
 
-class DiscenteCreate(UsuarioCreate, DiscenteBase):
+class DiscenteCreate(DiscenteBase):
     pass 
 
-class DocenteCreate(UsuarioCreate, DocenteBase):
+class DocenteCreate(DocenteBase):
     pass
 
-class DiscenteRead(UsuarioBase, DiscenteBase):
+class DiscenteRead(DiscenteBase):
     pass
 
-class Docente(UsuarioBase, DocenteBase):
+class DocenteRead(DocenteBase):
     pass
 
 class DiscenteUpdate(BaseModel):
