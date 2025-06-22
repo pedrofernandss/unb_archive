@@ -4,14 +4,14 @@ from decimal import Decimal
 
 class UniversidadeBase(BaseModel):
     nome: str
-    cidade: int
+    cidade: str
     estado: str
 
 class UniversidadeCreate(UniversidadeBase):
     pass
 
 class UniversidadeRead(UniversidadeBase):
-    pass
+    ies: int
 
 class UniversidadeUpdate(BaseModel):
     nome: Optional[str] = None
