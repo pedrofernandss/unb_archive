@@ -7,8 +7,7 @@ load_dotenv()
 
 def cria_conexao_db():
     """
-    Cria e retorna uma nova conexão com o banco de dados PostgreSQL.
-    Lê a URL de conexão da variável de ambiente DATABASE_URL.
+    Cria e retorna uma nova conexão com o banco de dados.
     """
     try:
         database_url = os.getenv("DATABASE_URL")

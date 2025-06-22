@@ -22,10 +22,10 @@ class DocenteBase(UsuarioBase):
 class UsuarioCreate(UsuarioBase):
     senha: str
 
-class DiscenteCreate(DiscenteBase):
+class DiscenteCreate(UsuarioCreate, DiscenteBase):
     pass 
 
-class DocenteCreate(DocenteBase):
+class DocenteCreate(UsuarioCreate, DocenteBase):
     pass
 
 class DiscenteRead(DiscenteBase):

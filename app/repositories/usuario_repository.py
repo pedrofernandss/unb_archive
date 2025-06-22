@@ -1,6 +1,9 @@
-from schemas.usuario_schema import UsuarioCreate
+from app.schemas.usuario_schema import UsuarioCreate
 
 def _create_base_user(cursor, user: UsuarioCreate):
+    """
+    Função base para cadastrar usuarios no banco de dados da aplicação
+    """
     cursor.execute(
         """
         INSERT INTO Usuario (cpf, nome, senha, email, idDepartamento, matricula)
