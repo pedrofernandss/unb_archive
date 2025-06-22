@@ -17,14 +17,16 @@ def create_discente(discente: DiscenteCreate):
             cur.execute(
                 """
                 INSERT INTO Discente (id_usuario_discente, ano_ingresso, status, coeficiente_rendimento)
-                VALUES (%s, %s, %s, %s);
+                VALUES (%s, %s, %s, %s)
+                RETURNING *;
                 """,
                 (discente.cpf, discente.ano_ingresso, discente.status, discente.coeficiente_rendimento)
             )
             
+            discente_cadastrado = cur.fetchone()
             conn.commit()
         
-            return discente
+            return discente_cadastrado
 
     except psycopg.Error as e:
         if conn:
@@ -51,8 +53,9 @@ def get_all_discentes():
                     Discente ON Usuario.cpf = Discente.id_usuario_discente 
                 """
             )
+            todos_discentes = cur.fetchall()
             conn.commit()
-            return cur.fetchall()
+            return todos_discentes
     finally:
         if conn: 
             conn.close()
