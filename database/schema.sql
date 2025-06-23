@@ -14,8 +14,8 @@ CREATE TABLE Universidade (
 CREATE TABLE Departamento (
     id_departamento SERIAL PRIMARY KEY,
     nome VARCHAR(100),
-    idUniversidade INTEGER NOT NULL,
-    FOREIGN KEY (idUniversidade) REFERENCES Universidade(ies)
+    id_universidade INTEGER NOT NULL,
+    FOREIGN KEY (id_universidade) REFERENCES Universidade(ies)
 );
 
 CREATE TABLE Curso (
