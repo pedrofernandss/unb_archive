@@ -9,7 +9,7 @@ from typing import List
 
 router = APIRouter()
 
-@router.post("/discente", response_model=DiscenteRead, status_code=status.HTTP_201_CREATED)
+@router.post("/usuarios/discente", response_model=DiscenteRead, status_code=status.HTTP_201_CREATED)
 def create_discente(discente_data: DiscenteCreate):
     """Endpoint para cadastrar um novo discente no banco de dados."""
     try:
@@ -22,7 +22,7 @@ def create_discente(discente_data: DiscenteCreate):
             detail=f"Erro ao criar discente: {e}"
         )
 
-@router.get("/discente", response_model=List[DiscenteRead])
+@router.get("usuarios/discente", response_model=List[DiscenteRead])
 def get_all_discentes():
     """Endpoint para listar todos os discentes cadastrados."""
     return discente_repository.get_all_discentes()
