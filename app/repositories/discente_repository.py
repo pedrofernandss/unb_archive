@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.usuario_schema import DiscenteCreate
+from app.schemas.usuario_schema import DiscenteCreate, DiscenteUpdate
 from . import usuario_repository 
 
 def create_discente(discente: DiscenteCreate):
@@ -23,9 +23,23 @@ def create_discente(discente: DiscenteCreate):
                 (discente.cpf, discente.ano_ingresso, discente.status, discente.coeficiente_rendimento)
             )
             
+            cur.execute(
+                """
+                SELECT 
+                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_departamento,
+                    discente.ano_ingresso, discente.status, discente.coeficiente_rendimento, discente.id_reputacao
+                FROM 
+                    Usuario usuario JOIN Discente discente ON usuario.cpf = discente.id_usuario_discente
+                WHERE 
+                    usuario.cpf = %s;
+                """,
+                (discente.cpf,)
+            )
+            
             discente_cadastrado = cur.fetchone()
+            
             conn.commit()
-        
+            
             return discente_cadastrado
 
     except psycopg.Error as e:
@@ -77,6 +91,54 @@ def get_discente_by_cpf(cpf: str):
                 (cpf,)
             )
             return cur.fetchone()
+    finally:
+        if conn:
+            conn.close()
+
+def update_discente(cpf: str, data: DiscenteUpdate):
+    """
+    Atualiza um discente, modificando as tabelas Usuario e/ou Discente.
+    """
+
+    update_data = data.model_dump(exclude_unset=True)
+
+    if not update_data:
+        return get_discente_by_cpf(cpf)
+
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            
+            campos_usuario = [key for key in ["nome", "email", "senha", "id_departamento", "matricula"] if key in update_data]
+            
+            if campos_usuario:
+                set_clauses = [f"{key} = %s" for key in campos_usuario]
+                params = [update_data[key] for key in campos_usuario]
+                params.append(cpf) 
+                
+                query_usuario = f"UPDATE Usuario SET {', '.join(set_clauses)} WHERE cpf = %s;"
+                cur.execute(query_usuario, tuple(params))
+
+            campos_discente = [key for key in ["ano_ingresso", "status", "coeficiente_rendimento", "idReputacao"] if key in update_data]
+
+            if campos_discente:
+                set_clauses = [f"{key} = %s" for key in campos_discente]
+                params = [update_data[key] for key in campos_discente]
+                params.append(cpf)
+
+                query_discente = f"UPDATE Discente SET {', '.join(set_clauses)} WHERE id_usuario_discente = %s;"
+                cur.execute(query_discente, tuple(params))
+
+            conn.commit()
+            
+            return get_discente_by_cpf(cpf)
+
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao atualizar discente: {e}")
+        raise
     finally:
         if conn:
             conn.close()
