@@ -37,9 +37,9 @@ CREATE TABLE Usuario (
     nome VARCHAR(100) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    idDepartamento INTEGER NOT NULL,
+    id_departamento INTEGER NOT NULL,
     matricula VARCHAR(20),
-    FOREIGN KEY (idDepartamento) REFERENCES Departamento(id_departamento)
+    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
 );
 
 CREATE TABLE Discente (
@@ -47,9 +47,9 @@ CREATE TABLE Discente (
     ano_ingresso INTEGER,
     status VARCHAR(20),
     coeficiente_rendimento NUMERIC(4,2),
-    idReputacao INTEGER,
+    id_reputacao INTEGER,
     FOREIGN KEY (id_usuario_discente) REFERENCES Usuario(cpf),
-    FOREIGN KEY (idReputacao) REFERENCES Reputacao(id_reputacao)
+    FOREIGN KEY (id_reputacao) REFERENCES Reputacao(id_reputacao)
 );
 
 CREATE TABLE Docente (
@@ -63,8 +63,8 @@ CREATE TABLE Docente (
 CREATE TABLE Disciplina (
     codigo SERIAL PRIMARY KEY,
     nome VARCHAR(100),
-    idDepartamento INTEGER NOT NULL,
-    FOREIGN KEY (idDepartamento) REFERENCES Departamento(id_departamento)
+    id_departamento INTEGER NOT NULL,
+    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
 );
 
 CREATE TABLE Material (
