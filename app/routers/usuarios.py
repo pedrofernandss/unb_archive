@@ -39,3 +39,16 @@ def get_discente_by_cpf(cpf: str):
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Erro ao criar discente: {e}"
         )
+
+@router.patch("/usuarios/discente/{cpf}", response_model=DiscenteRead, status_code=status.HTTP_201_CREATED)
+def update_discente(cpf: str, discente_data: DiscenteUpdate):
+    """Endpoint para atualizar informações de discente no banco de dados."""
+    try:
+        discente_atualizado = discente_repository.update_discente(cpf, discente_data)
+        return discente_atualizado
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar discente: {e}"
+        )
