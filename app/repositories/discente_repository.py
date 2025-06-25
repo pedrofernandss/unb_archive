@@ -120,7 +120,7 @@ def update_discente(cpf: str, data: DiscenteUpdate):
                 query_usuario = f"UPDATE Usuario SET {', '.join(set_clauses)} WHERE cpf = %s;"
                 cur.execute(query_usuario, tuple(params))
 
-            campos_discente = [key for key in ["ano_ingresso", "status", "coeficiente_rendimento", "idReputacao"] if key in update_data]
+            campos_discente = [key for key in ["ano_ingresso", "status", "coeficiente_rendimento", "id_reputacao"] if key in update_data]
 
             if campos_discente:
                 set_clauses = [f"{key} = %s" for key in campos_discente]
