@@ -1,9 +1,14 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status
-from app.repositories import discente_repository, docente_repository
-from app.schemas.usuario_schema import DiscenteCreate, DiscenteRead, DiscenteUpdate, DocenteCreate, DocenteRead, DocenteUpdate
+from app.repositories import usuario_repository, discente_repository, docente_repository
+from app.schemas.usuario_schema import UsuarioBase, DiscenteCreate, DiscenteRead, DiscenteUpdate, DocenteCreate, DocenteRead, DocenteUpdate
 
 router = APIRouter()
+
+@router.get("/usuarios", response_model=List[UsuarioBase])
+def get_all_usuarios():
+    """Endpoint para listar todos os usuários cadastrados, independente do tipo."""
+    return usuario_repository.get_all_usuarios()
 
 @router.post("/usuarios/discente", response_model=DiscenteRead, status_code=status.HTTP_201_CREATED)
 def create_discente(discente_data: DiscenteCreate):
