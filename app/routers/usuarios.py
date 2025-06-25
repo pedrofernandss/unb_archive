@@ -1,11 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
-
-from app.schemas.usuario_schema import DiscenteCreate, DiscenteRead, DiscenteUpdate
-
-from app.repositories import discente_repository
-
-
 from typing import List
+from fastapi import APIRouter, HTTPException, status
+from app.repositories import discente_repository, docente_repository
+from app.schemas.usuario_schema import DiscenteCreate, DiscenteRead, DiscenteUpdate, DocenteCreate, DocenteRead, DocenteUpdate
 
 router = APIRouter()
 
@@ -51,4 +47,49 @@ def update_discente(cpf: str, discente_data: DiscenteUpdate):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Erro ao criar discente: {e}"
+        )
+    
+
+@router.post("/usuarios/docente", response_model=DocenteRead, status_code=status.HTTP_201_CREATED)
+def create_docente(docente_data: DocenteCreate):
+    """Endpoint para cadastrar um novo docente no banco de dados."""
+    try:
+        novo_docente = docente_repository.create_docente(docente_data)
+        return novo_docente
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar docente: {e}"
+        )
+
+@router.get("/usuarios/docente", response_model=List[DocenteRead])
+def get_all_docentes():
+    """Endpoint para listar todos os docentes cadastrados."""
+    return docente_repository.get_all_docentes()
+
+@router.get("/usuarios/docente/{cpf}", response_model=DocenteRead, status_code=status.HTTP_201_CREATED)
+def get_docente_by_cpf(cpf: str):
+    """Endpoint para listar um docente específico do banco de dados."""
+    try:
+        docente_selecionado = docente_repository.get_docente_by_cpf(cpf)
+        return docente_selecionado
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar docente: {e}"
+        )
+
+@router.patch("/usuarios/docente/{cpf}", response_model=DocenteRead, status_code=status.HTTP_201_CREATED)
+def update_docente(cpf: str, docente_data: DocenteUpdate):
+    """Endpoint para atualizar informações de docente no banco de dados."""
+    try:
+        docente_atualizado = docente_repository.update_docente(cpf, docente_data)
+        return docente_atualizado
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar docente: {e}"
         )
