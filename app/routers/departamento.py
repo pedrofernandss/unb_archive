@@ -1,24 +1,14 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, status
-
-from app.schemas.departamento_schema import DepartamentoRead, DepartamentoCreate, DepartamentoUpdate
-
+from fastapi import APIRouter, status
 from app.repositories import departamento_repository
+from app.schemas.departamento_schema import DepartamentoRead, DepartamentoCreate, DepartamentoUpdate
 
 router = APIRouter()
 
 @router.post("/departamento", response_model=DepartamentoRead, status_code=status.HTTP_201_CREATED)
 def create_departamento(departamento_data: DepartamentoCreate):
     """Endpoint para cadastrar um novo departamento no banco de dados."""
-    try:
-        novo_departamento = departamento_repository.create_departamento(departamento_data)
-        return novo_departamento
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Erro ao criar universidade: {e}"
-        )
+    return departamento_repository.create_departamento(departamento_data)
 
 @router.get("/departamento", response_model=List[DepartamentoRead])
 def get_all_departamento():
