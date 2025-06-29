@@ -2,8 +2,8 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class AvaliaBase(BaseModel):
-    idDocente: Optional[str] = None
-    idMaterial: Optional[int] = None
+    idDocente: str
+    idMaterial: int
 
 class AvaliaCreate(AvaliaBase):
     pass

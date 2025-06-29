@@ -4,8 +4,8 @@ from decimal import Decimal
 from datetime import date
 
 class AvaliacaoBase(BaseModel):
-    data_avaliacao: Optional[date] = None
-    nota: Optional[Decimal] = None
+    data_avaliacao: date
+    nota: Decimal
     idMaterial: int
 
 class AvaliacaoCreate(AvaliacaoBase):
