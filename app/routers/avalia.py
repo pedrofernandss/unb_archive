@@ -1,0 +1,40 @@
+from fastapi import APIRouter, HTTPException, status
+
+from app.schemas.avalia_schema import AvaliaRead, AvaliaCreate, AvaliaUpdate
+
+from app.repositories import avalia_repository
+
+
+from typing import List
+
+router = APIRouter()
+
+@router.post("/avalia", response_model=AvaliaRead, status_code=status.HTTP_201_CREATED)
+def create_avaliacao(avalia_data: AvaliaCreate):
+    """Endpoint para cadastrar uma nova avalia no banco de dados."""
+    try:
+        nova_avalia = avalia_repository.create_avalia(avalia_data)
+        return nova_avalia
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar Avalia: {e}"
+        )
+    
+
+@router.get("/avalia", response_model=List[AvaliaRead])
+def get_all_avalias():
+    """Endpoint para listar todas as universidades cadastradas."""
+    return avalia_repository.get_all_avalias()
+
+@router.patch("/avalia/{id_avalia}", response_model=AvaliaRead)
+def update_avalia_by_id(id_avalia: int, update_data: AvaliaUpdate):
+    """Endpoint para atualizar uma universidade específica."""
+    return avalia_repository.update_avalia(id_avalia, update_data)
+'''
+@router.get("/universidade/{ies}", response_model=UniversidadeRead)
+def get_universidade_by_ies(ies: int):
+    """Endpoint para listar uma universidade específica."""
+    return universidade_repository.get_universidade_by_ies(ies)
+    '''
