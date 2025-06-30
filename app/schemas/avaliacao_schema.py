@@ -6,7 +6,7 @@ from datetime import date
 class AvaliacaoBase(BaseModel):
     data_avaliacao: date
     nota: Decimal
-    idMaterial: int
+    idmaterial: int
 
 class AvaliacaoCreate(AvaliacaoBase):
     pass
