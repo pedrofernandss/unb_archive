@@ -5,8 +5,8 @@ class MaterialBase(BaseModel):
     nome: str
     descricao: str
     ano_semestre_ref: str
-    local_arquivo: str
-    idDisciplina: str
+    local_arquivo: bytes
+    iddisciplina: int
 
 class MaterialCreate(MaterialBase):
     pass
