@@ -22,18 +22,46 @@ def create_avaliacao(avaliacao_data: AvaliacaoCreate):
             detail=f"Erro ao criar Avaliação: {e}"
         )
     
+@router.get("/avaliacao", response_model=List[AvaliacaoRead])
+def get_all_avaliacoes():
+    """Endpoint para listar todas as universidades cadastradas."""
+    return avaliacao_repository.get_all_avaliacoes()
+
+@router.get("/avaliacao/{idavaliacao}", response_model=AvaliacaoRead)
+def get_avaliacao_id(id: int):
+    """Endpoint para listar uma avalia específica."""
+    return avaliacao_repository.get_avaliacao_by_id(id)
+
+@router.get("/avaliacao/material/{id_material}", response_model=List[AvaliacaoRead])
+def get_avaliacao_by_material(id: int):
+    """Endpoint para listar uma avalia específica."""
+    return avaliacao_repository.get_avaliacao_by_material(id)
+    
 @router.patch("/avaliacao/{id_avaliacao}", response_model=AvaliacaoRead)
 def update_avaliacao_by_id(id_avaliacao: int, update_data: AvaliacaoUpdate):
     """Endpoint para atualizar uma universidade específica."""
     return avaliacao_repository.update_avaliacao(id_avaliacao, update_data)
-'''
-@router.get("/universidade", response_model=List[UniversidadeRead])
-def get_all_universidades():
-    """Endpoint para listar todas as universidades cadastradas."""
-    return universidade_repository.get_all_universidades()
 
-@router.get("/universidade/{ies}", response_model=UniversidadeRead)
-def get_universidade_by_ies(ies: int):
-    """Endpoint para listar uma universidade específica."""
-    return universidade_repository.get_universidade_by_ies(ies)
-    '''
+@router.delete("/avaliacao/{id_avaliacao}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_avaliacao(id_avaliacao: int):
+    """
+    Endpoint para deletar uma avaliação específica.
+    Retorna status 204 No Content se a avaliação for deletada com sucesso.
+    """
+    try:
+        was_deleted = avaliacao_repository.delete_avaliacao(id_avaliacao)
+        
+        if not was_deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Avaliação com ID {id_avaliacao} não encontrada."
+            )
+        return
+
+    except Exception as e:
+        if isinstance(e, HTTPException): 
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao deletar avaliação: {e}"
+        )
