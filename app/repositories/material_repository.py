@@ -3,9 +3,9 @@ from psycopg.rows import dict_row
 from app.database import cria_conexao_db
 from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 
-def create_material(material: MaterialCreate):
+def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina):
     """
-    Função para cadastrar materiais no banco de dados da aplicação
+    Insere um novo material no banco, incluindo o PDF como binário.
     """
     conn = None
     try:
@@ -13,15 +13,21 @@ def create_material(material: MaterialCreate):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, idDisciplina)
+                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina)
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING *;
+                RETURNING id_material, nome, descricao, ano_semestre_ref, iddisciplina;
                 """,
-                (material.nome, material.descricao, material.ano_semestre_ref, material.local_arquivo, material.iddisciplina)
+                (
+                    nome,
+                    descricao,
+                    ano_semestre_ref,
+                    local_arquivo,  # ✅ Aqui é o PDF binário!
+                    iddisciplina
+                )
             )
-            material_cadastrado = cur.fetchone()
+            material = cur.fetchone()
             conn.commit()
-            return material_cadastrado
+            return material
 
     except psycopg.Error as e:
         if conn:
@@ -32,9 +38,9 @@ def create_material(material: MaterialCreate):
         if conn:
             conn.close()
 
-def get_all_material():
+def get_all_materiais():
     """
-    Função para acessar todos os materiais cadastrados no banco de dados da aplicação
+    Função para acessar todas os materiais cadastradas no banco de dados da aplicação
     """
     conn = None
     try: 
@@ -46,16 +52,14 @@ def get_all_material():
                 FROM Material
                 """
             )
-            materiais = cur.fetchall()
-            return materiais
+            material = cur.fetchall()
+            conn.commit()
+            return material
     finally:
         if conn: 
             conn.close()
 
 def get_material_by_id(id_material: int):
-    """
-    Função para acessar um material específico cadastrado no banco de dados pelo seu id.
-    """
     conn = None
     try:
         conn = cria_conexao_db()
@@ -72,68 +76,45 @@ def get_material_by_id(id_material: int):
         if conn:
             conn.close()
 
-def update_material(id_material: int, material_data: MaterialUpdate):
-    """
-    Atualiza um material no banco de dados.
-    """
+def update_material(id_material: int, data: MaterialUpdate):
+    update_data = data.model_dump(exclude_unset=True)  # Pega só os campos enviados
+
+    if not update_data:
+        return None  # Nada para atualizar
+
+    set_query = [f"{key} = %s" for key in update_data.keys()]
+    set_query_str = ", ".join(set_query)
+
+    params_atualizacao_lista = list(update_data.values())
+    params_atualizacao_lista.append(id_material)
+
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            # Cria lista dinâmica de campos
-            fields = []
-            values = []
-
-            if material_data.nome is not None:
-                fields.append("nome = %s")
-                values.append(material_data.nome)
-            if material_data.descricao is not None:
-                fields.append("descricao = %s")
-                values.append(material_data.descricao)
-            if material_data.ano_semestre_ref is not None:
-                fields.append("ano_semestre_ref = %s")
-                values.append(material_data.ano_semestre_ref)
-
-            if not fields:
-                raise ValueError("Nenhum campo para atualizar.")
-
-            values.append(id_material)
-
             query = f"""
                 UPDATE Material
-                SET {', '.join(fields)}
+                SET {set_query_str}
                 WHERE id_material = %s
-                RETURNING *;
+                RETURNING *;       
             """
-
-            cur.execute(query, tuple(values))
-            updated_material = cur.fetchone()
+            cur.execute(query, tuple(params_atualizacao_lista))
             conn.commit()
-            return updated_material
-
+            return cur.fetchone()
     finally:
         if conn:
             conn.close()
 
 def delete_material(id_material: int):
-    """
-    Remove um material do banco de dados.
-    """
-    conn = None
+    conn = cria_conexao_db()
     try:
-        conn = cria_conexao_db()
-        with conn.cursor(row_factory=dict_row) as cur:
+        with conn.cursor() as cur:
             cur.execute(
-                """
-                DELETE FROM Material
-                WHERE id_material = %s
-                RETURNING *;
-                """,
+                "DELETE FROM Material WHERE id_material = %s;",
                 (id_material,)
             )
-            deleted_material = cur.fetchone()
             conn.commit()
-            return deleted_material
+            return cur.rowcount > 0  # True se deletou algo
     finally:
-        if conn:
-            conn.close()
+        conn.close()
+

@@ -1,22 +1,40 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form
 from typing import List
-from app.schemas.material_schema import (
-    MaterialCreate, MaterialRead, MaterialUpdate,
-)
+from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 from app.repositories import material_repository
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/material",  # <-- 🔑 prefixa todas as rotas! 
+    tags=["Material"],   # Opcional: organiza no Swagger
+)
 
-@router.post("/material", response_model=MaterialRead, status_code=status.HTTP_201_CREATED)
-def create_material(material: MaterialCreate):
-    result = material_repository.create_material(material)
-    if not result:
-        raise HTTPException(400, "Erro ao criar material.")
-    return result
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=MaterialRead)
+async def create_material(
+    nome: str = Form(...),
+    descricao: str = Form(...),
+    ano_semestre_ref: str = Form(...),
+    arquivo: UploadFile = File(...),
+    iddisciplina: int = Form(...)
+):
+    try:
+        conteudo_pdf = await arquivo.read()
+
+        novo_material = material_repository.create_material(
+            nome=nome,
+            descricao=descricao,
+            ano_semestre_ref=ano_semestre_ref,
+            local_arquivo=conteudo_pdf,
+            iddisciplina=iddisciplina
+        )
+
+        return novo_material
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao criar material: {e}")
 
 @router.get("/", response_model=List[MaterialRead])
-def get_all():
-    return material_repository.get_all_material()
+def get_all_materiais():
+    return material_repository.get_all_materiais()
 
 @router.get("/{id_material}", response_model=MaterialRead)
 def get_by_id(id_material: int):
@@ -32,10 +50,9 @@ def update(id_material: int, data: MaterialUpdate):
         raise HTTPException(404, "Nada atualizado.")
     return result
 
-@router.delete("/{id_material}", response_model=MaterialRead)
+@router.delete("/{id_material}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(id_material: int):
     result = material_repository.delete_material(id_material)
     if not result:
         raise HTTPException(404, "Material não encontrado para deletar.")
-    return result
-
+    return {"detail": "Material deletado com sucesso"}

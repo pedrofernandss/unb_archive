@@ -4,6 +4,7 @@
 .venv/
 venv/
 env/
+.env
 
 # Arquivos de Cache do Python (Python Cache)
 __pycache__/

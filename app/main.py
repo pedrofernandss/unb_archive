@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import usuarios, universidade, departamento, material
+from app.routers import usuarios, universidade, departamento, material, tag
 
 app = FastAPI(
     title="UnB Archive API",
@@ -30,6 +30,13 @@ app.include_router(
     prefix="/api/v1",
     tags=["Material"]
 )
+
+app.include_router(
+    tag.router,
+    prefix="/api/v1",
+    tags=["tag"]
+)
+
 
 @app.get("/", tags=["Root"])
 def read_root():
