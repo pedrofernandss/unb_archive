@@ -1,4 +1,6 @@
-# unb_archive
+a.sql` para definir a estrutura de todas as tabelas. Você deve executar este script manualmente no banco de dados que acabou de criar.
+
+* **Opção 1 (Via Ferramenta Gráfic# unb_archive
 
 # Projeto de API com FastAPI e PostgreSQL
 
@@ -60,9 +62,7 @@ CREATE DATABASE unb_archive;
 ```
 
 **2. Criar as Tabelas (Executar o Schema)**
-Este projeto usa um arquivo `schema.sql` para definir a estrutura de todas as tabelas. Você deve executar este script manualmente no banco de dados que acabou de criar.
-
-* **Opção 1 (Via Ferramenta Gráfica):**
+Este projeto usa um arquivo `schema):**
     1.  Abra o banco `unb_archive` no pgAdmin ou DBeaver.
     2.  Abra uma janela de query.
     3.  Copie todo o conteúdo do arquivo **`database/schema.sql`** e cole na janela de query.
