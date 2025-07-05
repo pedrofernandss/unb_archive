@@ -73,25 +73,25 @@ CREATE TABLE Material (
     descricao TEXT,
     ano_semestre_ref VARCHAR(10),
     local_arquivo BYTEA,
-    idDisciplina INTEGER,
-    FOREIGN KEY (idDisciplina) REFERENCES Disciplina(codigo)
+    id_disciplina INTEGER,
+    FOREIGN KEY (id_disciplina) REFERENCES Disciplina(codigo)
 );
 
 CREATE TABLE Avaliacao (
     id_avaliacao SERIAL PRIMARY KEY,
     data_avaliacao DATE,
     nota NUMERIC(3,1),
-    idMaterial INTEGER NOT NULL,
-    FOREIGN KEY (idMaterial) REFERENCES Material(id_material)
+    id_material INTEGER NOT NULL,
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
 CREATE TABLE Avalia (
     id_avalia SERIAL PRIMARY KEY,
-    idDocente VARCHAR(14),
-    idMaterial INTEGER,
+    id_docente VARCHAR(14),
+    id_material INTEGER,
     valido BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (idDocente) REFERENCES Docente(id_usuario_docente),
-    FOREIGN KEY (idMaterial) REFERENCES Material(id_material)
+    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente),
+    FOREIGN KEY (id_material) REFERENCES Material(id_material)
 );
 
 ALTER TABLE Docente ADD COLUMN idAvalia INTEGER;
@@ -102,10 +102,10 @@ ALTER TABLE Material ADD FOREIGN KEY (idAvalia) REFERENCES Avalia(id_avalia);
 
 CREATE TABLE Compartilha_Produz (
     id_material INTEGER,
-    idDocente VARCHAR(14),
-    PRIMARY KEY (id_material, idDocente),
+    id_docente VARCHAR(14),
+    PRIMARY KEY (id_material, id_docente),
     FOREIGN KEY (id_material) REFERENCES Material(id_material),
-    FOREIGN KEY (idDocente) REFERENCES Docente(id_usuario_docente)
+    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente)
 );
 
 CREATE TABLE Tag (

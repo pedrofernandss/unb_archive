@@ -49,7 +49,10 @@ def get_escolaridades_by_departamento(departamento_id: int):
                 "SELECT * FROM Escolaridade WHERE departamento_escolaridade = %s",
                 (departamento_id,)
             )
-            return cur.fetchall()
+            escolaridade_departamento = cur.fetchall()
+            conn.commit()
+            
+            return escolaridade_departamento
     finally:
         if conn:
             conn.close()

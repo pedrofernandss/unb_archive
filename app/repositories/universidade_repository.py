@@ -103,6 +103,8 @@ def update_universidade(ies: int, data: UniversidadeUpdate):
 
             cur.execute(query, tuple(params_atualizacao_lista))
 
+            conn.commit()
+
             return cur.fetchone()
     finally:
         if conn:

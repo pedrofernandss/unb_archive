@@ -76,8 +76,10 @@ def update_reputacao(id: int, reputacao_data: ReputacaoUpdate):
                 """,
                 (reputacao_data.nivel, id)
             )
-
-            return cur.fetchone()
+            reputacao_atualizada = cur.fetchone()
+            conn.commit()
+            
+            return reputacao_atualizada
     finally:
         if conn:
             conn.close()
