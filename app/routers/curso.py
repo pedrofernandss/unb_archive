@@ -22,3 +22,23 @@ def get_all_cursos():
 @router.get("/curso/departamento/{departamento_id}", response_model=List[CursoRead])
 def get_cursos_by_departamento(departamento_id: int):
     return curso_repository.get_cursos_by_departamento(departamento_id)
+
+@router.put("/curso/{curso_nome}/departamento/{departamento_id}", response_model=CursoRead)
+def update_curso(curso_nome: str, departamento_id: int, curso_data: CursoUpdate):
+    try:
+        return curso_repository.update_curso(curso_nome, departamento_id, curso_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Erro ao atualizar curso: {str(e)}"
+        )
+
+@router.delete("/curso/{curso_nome}/departamento/{departamento_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_curso(curso_nome: str, departamento_id: int):
+    try:
+        curso_repository.delete_curso(curso_nome, departamento_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Erro ao deletar curso: {str(e)}"
+        )

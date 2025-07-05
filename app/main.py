@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento
-from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(
     title="UnB Archive API",
@@ -50,7 +50,6 @@ app.include_router(
     tags=["Escolaridade"]
 )
 
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
 @app.get("/", tags=["Root"])
 def read_root():
