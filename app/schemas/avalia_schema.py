@@ -2,8 +2,9 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class AvaliaBase(BaseModel):
-    idDocente: Optional[str] = None
-    idMaterial: Optional[int] = None
+    iddocente: str
+    idmaterial: int
+    valido: bool = True
 
 class AvaliaCreate(AvaliaBase):
     pass
@@ -12,4 +13,5 @@ class AvaliaRead(AvaliaBase):
     id_avalia: int
 
 class AvaliaUpdate(BaseModel):
-    pass
+    iddocente: Optional[str] = None
+    valido: Optional[bool] = None

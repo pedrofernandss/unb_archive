@@ -89,6 +89,7 @@ CREATE TABLE Avalia (
     id_avalia SERIAL PRIMARY KEY,
     idDocente VARCHAR(14),
     idMaterial INTEGER,
+    valido BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (idDocente) REFERENCES Docente(id_usuario_docente),
     FOREIGN KEY (idMaterial) REFERENCES Material(id_material)
 );
