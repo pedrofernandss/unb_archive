@@ -1,59 +1,59 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.usuario_schema import DiscenteCreate, DiscenteUpdate
+from app.schemas.usuario_schema import DocenteCreate, DocenteUpdate
 from . import usuario_repository 
 
-def create_discente(discente: DiscenteCreate):
+def create_docente(docente: DocenteCreate):
     """
-    Função para cadastrar discentes no banco de dados da aplicação
+    Função para cadastrar docentes no banco de dados da aplicação
     """
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            usuario_repository._create_base_user(cur, discente)
+            usuario_repository._create_base_user(cur, docente)
 
             cur.execute(
                 """
-                INSERT INTO Discente (id_usuario_discente, ano_ingresso, status, coeficiente_rendimento)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO Docente (id_usuario_docente, especialidade, permissao_validacao)
+                VALUES (%s, %s, %s)
                 RETURNING *;
                 """,
-                (discente.cpf, discente.ano_ingresso, discente.status, discente.coeficiente_rendimento)
+                (docente.cpf, docente.especialidade, docente.permissao_validacao)
             )
             
             cur.execute(
                 """
                 SELECT 
                     usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_departamento,
-                    discente.ano_ingresso, discente.status, discente.coeficiente_rendimento, discente.id_reputacao
+                    docente.especialidade, docente.permissao_validacao
                 FROM 
-                    Usuario usuario JOIN Discente discente ON usuario.cpf = discente.id_usuario_discente
+                    Usuario usuario JOIN Docente docente ON usuario.cpf = docente.id_usuario_docente
                 WHERE 
                     usuario.cpf = %s;
                 """,
-                (discente.cpf,)
+                (docente.cpf,)
             )
             
-            discente_cadastrado = cur.fetchone()
+            docente_cadastrado = cur.fetchone()
             
             conn.commit()
             
-            return discente_cadastrado
+            return docente_cadastrado
 
     except psycopg.Error as e:
         if conn:
             conn.rollback()
-        print(f"Erro ao criar discente: {e}")
+        print(f"Erro ao criar docente: {e}")
         raise
     finally:
         if conn:
             conn.close()
 
-def get_all_discentes():
+def get_all_docentes():
     """
-    Função para acessar todos os discentes cadastrados no banco de dados da aplicação
+    Função para acessar todos os docentes cadastrados no banco de dados da aplicação
     """
     conn = None
     try: 
@@ -64,19 +64,19 @@ def get_all_discentes():
                 SELECT *  
                 FROM Usuario
                 JOIN 
-                    Discente ON Usuario.cpf = Discente.id_usuario_discente 
+                    Docente ON Usuario.cpf = Docente.id_usuario_docente 
                 """
             )
-            todos_discentes = cur.fetchall()
+            todos_docentes = cur.fetchall()
             conn.commit()
-            return todos_discentes
+            return todos_docentes
     finally:
         if conn: 
             conn.close()
 
-def get_discente_by_cpf(cpf: str):
+def get_docente_by_cpf(cpf: str):
     """
-    Função para acessar Discente específico cadastrado no banco de dados, pelo número do CPF
+    Função para acessar docente específico cadastrado no banco de dados, pelo número do CPF
     """
     conn = None
     try:
@@ -85,7 +85,7 @@ def get_discente_by_cpf(cpf: str):
             cur.execute(
                 """
                 SELECT * FROM Usuario usuario
-                JOIN Discente discente ON usuario.cpf = discente.id_usuario_discente
+                JOIN Docente docente ON usuario.cpf = docente.id_usuario_docente
                 WHERE usuario.cpf = %s;
                 """,
                 (cpf,)
@@ -95,15 +95,15 @@ def get_discente_by_cpf(cpf: str):
         if conn:
             conn.close()
 
-def update_discente(cpf: str, data: DiscenteUpdate):
+def update_docente(cpf: str, data: DocenteUpdate):
     """
-    Atualiza um discente, modificando as tabelas Usuario e/ou Discente.
+    Atualiza um docente, modificando as tabelas Usuario e/ou Docente.
     """
 
     update_data = data.model_dump(exclude_unset=True)
 
     if not update_data:
-        return get_discente_by_cpf(cpf)
+        return get_docente_by_cpf(cpf)
 
     conn = None
     try:
@@ -120,24 +120,24 @@ def update_discente(cpf: str, data: DiscenteUpdate):
                 query_usuario = f"UPDATE Usuario SET {', '.join(set_clauses)} WHERE cpf = %s;"
                 cur.execute(query_usuario, tuple(params))
 
-            campos_discente = [key for key in ["ano_ingresso", "status", "coeficiente_rendimento", "id_reputacao"] if key in update_data]
+            campos_docente = [key for key in ["especialidade", "permissao_validacao"] if key in update_data]
 
-            if campos_discente:
-                set_clauses = [f"{key} = %s" for key in campos_discente]
-                params = [update_data[key] for key in campos_discente]
+            if campos_docente:
+                set_clauses = [f"{key} = %s" for key in campos_docente]
+                params = [update_data[key] for key in campos_docente]
                 params.append(cpf)
 
-                query_discente = f"UPDATE Discente SET {', '.join(set_clauses)} WHERE id_usuario_discente = %s;"
-                cur.execute(query_discente, tuple(params))
+                query_docente = f"UPDATE Docente SET {', '.join(set_clauses)} WHERE id_usuario_docente = %s;"
+                cur.execute(query_docente, tuple(params))
 
             conn.commit()
             
-            return get_discente_by_cpf(cpf)
+            return get_docente_by_cpf(cpf)
 
     except psycopg.Error as e:
         if conn:
             conn.rollback()
-        print(f"Erro ao atualizar discente: {e}")
+        print(f"Erro ao atualizar docente: {e}")
         raise
     finally:
         if conn:

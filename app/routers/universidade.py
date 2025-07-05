@@ -1,26 +1,14 @@
-from fastapi import APIRouter, HTTPException, status
-
-from app.schemas.universidade_schema import UniversidadeRead, UniversidadeCreate, UniversidadeUpdate
-
-from app.repositories import universidade_repository
-
-
 from typing import List
+from fastapi import APIRouter, status
+from app.repositories import universidade_repository
+from app.schemas.universidade_schema import UniversidadeRead, UniversidadeCreate, UniversidadeUpdate
 
 router = APIRouter()
 
 @router.post("/universidade", response_model=UniversidadeRead, status_code=status.HTTP_201_CREATED)
 def create_universidade(universidade_data: UniversidadeCreate):
     """Endpoint para cadastrar uma nova universidade no banco de dados."""
-    try:
-        nova_universidade = universidade_repository.create_universidade(universidade_data)
-        return nova_universidade
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Erro ao criar universidade: {e}"
-        )
+    return universidade_repository.create_universidade(universidade_data)
 
 @router.get("/universidade", response_model=List[UniversidadeRead])
 def get_all_universidades():

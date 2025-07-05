@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnB Archive - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h2 { margin-top: 0; }
+        .stats { display: flex; justify-content: space-between; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .stat-label { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>UnB Archive Dashboard</h1>
+    
+    <div class="dashboard">
+        <div class="card">
+            <h2>Departamentos</h2>
+            <div id="departamentos-chart"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Disciplinas</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-disciplinas">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Estatísticas</h2>
+            <canvas id="stats-chart" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        async function fetchData(url) {
+            const response = await fetch(url);
+            return await response.json();
+        }
+
+        async function initDashboard() {
+            // Dados de exemplo (substituir por chamadas reais à API)
+            const departamentos = await fetchData('/api/v1/departamento');
+            const disciplinas = await fetchData('/api/v1/disciplina');
+            const cursos = await fetchData('/api/v1/curso');
+            
+            // Atualizar estatísticas
+            document.getElementById('total-disciplinas').textContent = disciplinas.length;
+            
+            // Gráfico de departamentos
+            new Chart(document.getElementById('stats-chart'), {
+                type: 'bar',
+                data: {
+                    labels: departamentos.map(d => d.nome),
+                    datasets: [{
+                        label: 'Disciplinas por Departamento',
+                        data: departamentos.map(d => 
+                            disciplinas.filter(dis => dis.id_departamento === d.id_departamento).length
+                        ),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

@@ -1,10 +1,24 @@
 from fastapi import FastAPI
-from app.routers import usuarios, universidade, avaliacao, avalia
+from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento, avaliacao, avalia
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(
     title="UnB Archive API",
     description="API para o projeto acadêmico de gerenciamento de arquivos e documentos universitários",
     version="1.0.0"
+)
+
+app.include_router(
+    universidade.router, 
+    prefix="/api/v1", 
+    tags=["Universidade"]
+)
+
+app.include_router(
+    departamento.router, 
+    prefix="/api/v1", 
+    tags=["Departamento"]
 )
 
 app.include_router(
@@ -14,9 +28,15 @@ app.include_router(
 )
 
 app.include_router(
-    universidade.router, 
+    reputacao.router, 
     prefix="/api/v1", 
-    tags=["Universidade"]
+    tags=["Reputação"]
+)
+
+app.include_router(
+    disciplina.router,
+    prefix="/api/v1",
+    tags=["Disciplina"]
 )
 
 app.include_router(
@@ -30,6 +50,20 @@ app.include_router(
     prefix="/api/v1", 
     tags=["Avalia"]
 )
+
+app.include_router(
+    curso.router,
+    prefix="/api/v1",
+    tags=["Curso"]
+)
+
+app.include_router(
+    escolaridade.router,
+    prefix="/api/v1",
+    tags=["Escolaridade"]
+)
+
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
 @app.get("/", tags=["Root"])
 def read_root():

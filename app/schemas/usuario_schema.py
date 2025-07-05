@@ -13,11 +13,12 @@ class DiscenteBase(UsuarioBase):
     status: str
     ano_ingresso: int
     coeficiente_rendimento: Decimal
+    id_reputacao: Optional[int] = None
 
 class DocenteBase(UsuarioBase):
     especialidade: str
     permissao_validacao: bool
-    idAvalia: Optional[int] = None
+    id_avalia: Optional[int] = None
 
 class UsuarioCreate(UsuarioBase):
     senha: str
