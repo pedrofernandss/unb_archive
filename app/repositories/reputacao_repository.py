@@ -83,3 +83,43 @@ def update_reputacao(id: int, reputacao_data: ReputacaoUpdate):
     finally:
         if conn:
             conn.close()
+
+def delete_reputation_by_cpf(cpf: str) -> int:
+    """
+    Deleta a Reputacao associada a um Discente específico.
+    Retorna 1 se a reputação foi deletada, 0 caso contrário.
+    """
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            
+            cur.execute(
+                "SELECT id_reputacao FROM Discente WHERE id_usuario = %s;",
+                (cpf,)
+            )
+            linha_reputacao = cur.fetchone()
+            
+            if not linha_reputacao or not linha_reputacao['id_reputacao']:
+                return 0
+
+            id_reputacao_alvo = linha_reputacao['id_reputacao']
+
+            cur.execute(
+                "UPDATE Discente SET id_reputacao = NULL WHERE id_usuario = %s;",
+                (cpf,)
+            )
+            
+            cur.execute(
+                "DELETE FROM Reputacao WHERE id_reputacao = %s;",
+                (id_reputacao_alvo,)
+            )
+            
+            linha_deletada = cur.rowcount
+            
+            conn.commit()
+            
+            return linha_deletada
+    finally:
+        if conn:
+            conn.close()

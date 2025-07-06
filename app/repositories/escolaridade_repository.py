@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.escolaridade_schema import EscolaridadeCreate, EscolaridadeRead
+from app.schemas.escolaridade_schema import EscolaridadeCreate, EscolaridadeRead, EscolaridadeUpdate
 
 def create_escolaridade(escolaridade: EscolaridadeCreate):
     conn = None

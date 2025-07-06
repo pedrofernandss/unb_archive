@@ -7,7 +7,7 @@ class MaterialBase(BaseModel):
     descricao: str
     ano_semestre_ref: str
     local_arquivo: str
-    id_disciplina: str
+    id_disciplina: int
 
 
 class MaterialCreate(MaterialBase):
@@ -16,7 +16,7 @@ class MaterialCreate(MaterialBase):
 
 class MaterialRead(MaterialBase):
     id_material: int
-    idAvalia: Optional[int] = None
+    id_avalia: Optional[int] = None
 
 
 class MaterialUpdate(BaseModel):

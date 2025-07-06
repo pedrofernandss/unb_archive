@@ -3,7 +3,8 @@ from psycopg.rows import dict_row
 from app.database import cria_conexao_db
 from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 
-def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina):
+
+def create_material(nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina):
     """
     Insere um novo material no banco, incluindo o PDF como binário.
     """
@@ -13,16 +14,16 @@ def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddiscipli
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina)
+                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina)
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING id_material, nome, descricao, ano_semestre_ref, iddisciplina;
+                RETURNING id_material, nome, descricao, ano_semestre_ref, id_disciplina;
                 """,
                 (
                     nome,
                     descricao,
                     ano_semestre_ref,
                     local_arquivo,  # ✅ Aqui é o PDF binário!
-                    iddisciplina
+                    id_disciplina
                 )
             )
             material = cur.fetchone()
@@ -38,12 +39,13 @@ def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddiscipli
         if conn:
             conn.close()
 
+
 def get_all_materiais():
     """
     Função para acessar todas os materiais cadastradas no banco de dados da aplicação
     """
     conn = None
-    try: 
+    try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -56,8 +58,9 @@ def get_all_materiais():
             conn.commit()
             return material
     finally:
-        if conn: 
+        if conn:
             conn.close()
+
 
 def get_material_by_id(id_material: int):
     conn = None
@@ -76,8 +79,10 @@ def get_material_by_id(id_material: int):
         if conn:
             conn.close()
 
+
 def update_material(id_material: int, data: MaterialUpdate):
-    update_data = data.model_dump(exclude_unset=True)  # Pega só os campos enviados
+    # Pega só os campos enviados
+    update_data = data.model_dump(exclude_unset=True)
 
     if not update_data:
         return None  # Nada para atualizar
@@ -105,6 +110,7 @@ def update_material(id_material: int, data: MaterialUpdate):
         if conn:
             conn.close()
 
+
 def delete_material(id_material: int):
     conn = cria_conexao_db()
     try:
@@ -117,4 +123,3 @@ def delete_material(id_material: int):
             return cur.rowcount > 0  # True se deletou algo
     finally:
         conn.close()
-

@@ -30,10 +30,10 @@ def get_all_avalias():
     return avalia_repository.get_all_avalias()
 
 
-@router.get("/avalia/id/{idavalia}", response_model=AvaliaRead)
-def get_avalia_id(idavalia: int):
+@router.get("/avalia/id/{id_avalia}", response_model=AvaliaRead)
+def get_avalia_id(id_avalia: int):
     """Endpoint para listar uma avalia específica."""
-    return avalia_repository.get_avalia_by_id(idavalia)
+    return avalia_repository.get_avalia_by_id(id_avalia)
 
 
 @router.get("/avalia/docente/{id_docente}", response_model=List[AvaliaRead])

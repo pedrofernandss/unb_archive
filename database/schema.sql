@@ -15,21 +15,21 @@ CREATE TABLE Departamento (
     id_departamento SERIAL PRIMARY KEY,
     nome VARCHAR(100),
     id_universidade INTEGER NOT NULL,
-    FOREIGN KEY (id_universidade) REFERENCES Universidade(ies)
+    FOREIGN KEY (id_universidade) REFERENCES Universidade(ies) ON DELETE CASCADE
 );
 
 CREATE TABLE Curso (
     curso VARCHAR(100),
     departamento_curso INTEGER,
     PRIMARY KEY (curso, departamento_curso),
-    FOREIGN KEY (departamento_curso) REFERENCES Departamento(id_departamento)
+    FOREIGN KEY (departamento_curso) REFERENCES Departamento(id_departamento) ON DELETE CASCADE
 );
 
 CREATE TABLE Escolaridade (
     escolaridade VARCHAR(100),
     departamento_escolaridade INTEGER,
     PRIMARY KEY (escolaridade, departamento_escolaridade),
-    FOREIGN KEY (departamento_escolaridade) REFERENCES Departamento(id_departamento)
+    FOREIGN KEY (departamento_escolaridade) REFERENCES Departamento(id_departamento) ON DELETE CASCADE
 );
 
 CREATE TABLE Usuario (
@@ -37,9 +37,11 @@ CREATE TABLE Usuario (
     nome VARCHAR(100) NOT NULL,
     senha VARCHAR(255) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    id_universidade INTEGER NOT NULL,
     id_departamento INTEGER NOT NULL,
     matricula VARCHAR(20),
-    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
+    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento) ON DELETE CASCADE,
+    FOREIGN KEY (id_universidade) REFERENCES Universidade(ies) ON DELETE CASCADE
 );
 
 CREATE TABLE Discente (
@@ -48,8 +50,8 @@ CREATE TABLE Discente (
     status VARCHAR(20),
     coeficiente_rendimento NUMERIC(4,2),
     id_reputacao INTEGER,
-    FOREIGN KEY (id_usuario_discente) REFERENCES Usuario(cpf),
-    FOREIGN KEY (id_reputacao) REFERENCES Reputacao(id_reputacao)
+    FOREIGN KEY (id_usuario_discente) REFERENCES Usuario(cpf) ON DELETE CASCADE,
+    FOREIGN KEY (id_reputacao) REFERENCES Reputacao(id_reputacao) ON DELETE SET NULL
 );
 
 CREATE TABLE Docente (
@@ -64,7 +66,7 @@ CREATE TABLE Disciplina (
     codigo SERIAL PRIMARY KEY,
     nome VARCHAR(100),
     id_departamento INTEGER NOT NULL,
-    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento)
+    FOREIGN KEY (id_departamento) REFERENCES Departamento(id_departamento) ON DELETE CASCADE
 );
 
 CREATE TABLE Material (
@@ -74,7 +76,7 @@ CREATE TABLE Material (
     ano_semestre_ref VARCHAR(10),
     local_arquivo BYTEA,
     id_disciplina INTEGER,
-    FOREIGN KEY (id_disciplina) REFERENCES Disciplina(codigo)
+    FOREIGN KEY (id_disciplina) REFERENCES Disciplina(codigo) ON DELETE CASCADE
 );
 
 CREATE TABLE Avaliacao (
@@ -82,7 +84,7 @@ CREATE TABLE Avaliacao (
     data_avaliacao DATE,
     nota NUMERIC(3,1),
     id_material INTEGER NOT NULL,
-    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE
 );
 
 CREATE TABLE Avalia (
@@ -90,22 +92,22 @@ CREATE TABLE Avalia (
     id_docente VARCHAR(14),
     id_material INTEGER,
     valido BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente),
-    FOREIGN KEY (id_material) REFERENCES Material(id_material)
+    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
+    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE
 );
 
-ALTER TABLE Docente ADD COLUMN idAvalia INTEGER;
-ALTER TABLE Docente ADD FOREIGN KEY (idAvalia) REFERENCES Avalia(id_avalia);
+ALTER TABLE Docente ADD COLUMN id_avalia INTEGER;
+ALTER TABLE Docente ADD FOREIGN KEY (id_avalia) REFERENCES Avalia(id_avalia) ON DELETE SET NULL;
 
-ALTER TABLE Material ADD COLUMN idAvalia INTEGER;
-ALTER TABLE Material ADD FOREIGN KEY (idAvalia) REFERENCES Avalia(id_avalia);
+ALTER TABLE Material ADD COLUMN id_avalia INTEGER;
+ALTER TABLE Material ADD FOREIGN KEY (id_avalia) REFERENCES Avalia(id_avalia) ON DELETE SET NULL;
 
 CREATE TABLE Compartilha_Produz (
     id_material INTEGER,
     id_docente VARCHAR(14),
     PRIMARY KEY (id_material, id_docente),
-    FOREIGN KEY (id_material) REFERENCES Material(id_material),
-    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente)
+    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE,
+    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE
 );
 
 CREATE TABLE Tag (
@@ -117,8 +119,8 @@ CREATE TABLE Possui (
     id_material INTEGER,
     id_tag INTEGER,
     PRIMARY KEY (id_material, id_tag),
-    FOREIGN KEY (id_material) REFERENCES Material(id_material),
-    FOREIGN KEY (id_tag) REFERENCES Tag(id_tag)
+    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE,
+    FOREIGN KEY (id_tag) REFERENCES Tag(id_tag) ON DELETE CASCADE
 );
 
 -- 3. Criação da View
@@ -138,12 +140,12 @@ SELECT
     STRING_AGG(DISTINCT doc_usuario.nome, ', ') AS docentes_associados,
     STRING_AGG(DISTINCT tg.nome_tag, ', ') AS tags
 FROM Material m
-INNER JOIN Disciplina d ON m.idDisciplina = d.codigo
+INNER JOIN Disciplina d ON m.id_disciplina = d.codigo
 INNER JOIN Departamento dep ON d.id_departamento = dep.id_departamento
 INNER JOIN Universidade u ON dep.id_universidade = u.ies
 LEFT JOIN Avaliacao av ON m.id_material = av.idMaterial
 LEFT JOIN Compartilha_Produz cp ON m.id_material = cp.id_material
-LEFT JOIN Docente doc ON cp.idDocente = doc.id_usuario_docente
+LEFT JOIN Docente doc ON cp.id_docente = doc.id_usuario_docente
 LEFT JOIN Usuario doc_usuario ON doc.id_usuario_docente = doc_usuario.cpf
 LEFT JOIN Possui p ON m.id_material = p.id_material
 LEFT JOIN Tag tg ON p.id_tag = tg.id_tag

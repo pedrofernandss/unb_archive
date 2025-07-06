@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status
 from app.repositories import curso_repository
-from app.schemas.curso_schema import CursoRead, CursoCreate
+from app.schemas.curso_schema import CursoRead, CursoCreate, CursoUpdate
 
 router = APIRouter()
 

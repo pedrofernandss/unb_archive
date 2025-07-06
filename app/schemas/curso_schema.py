@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from typing import Optional
+from pydantic import BaseModel
 
 class CursoBase(BaseModel):
     curso: str
@@ -11,4 +12,5 @@ class CursoRead(CursoBase):
     pass
 
 class CursoUpdate(BaseModel):
-    curso: str
+    curso: Optional[str] = None
+    departamento_curso: Optional[int] = None

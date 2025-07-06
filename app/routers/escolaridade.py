@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status
 from app.repositories import escolaridade_repository
-from app.schemas.escolaridade_schema import EscolaridadeRead, EscolaridadeCreate
+from app.schemas.escolaridade_schema import EscolaridadeRead, EscolaridadeCreate, EscolaridadeUpdate
 
 router = APIRouter()
 

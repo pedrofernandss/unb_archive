@@ -29,3 +29,19 @@ def get_departamento_by_id(id: int):
 def update_departamento_by_id(id: int, update_data: DepartamentoUpdate):
     """Endpoint para atualizar uma universidade específica."""
     return departamento_repository.update_departamento(id, update_data)
+
+# app/routers/departamentos.py
+
+@router.delete("departamento/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_departamento_cascade(id: int):
+    """
+    Deleta um departamento e todas as suas dependências.
+    Atenção: Esta é uma operação destrutiva.
+    """
+    deleted_count = departamento_repository.delete_departamento_by_id_cascade(id)
+    if not deleted_count:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Departamento com id={id} não encontrado."
+        )
+    return

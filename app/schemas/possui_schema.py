@@ -14,5 +14,5 @@ class PossuiRead(PossuiBase):
     id_tag: int
 
 class PossuiUpdate(BaseModel):
-    id_material: Optional[str] = None
-    id_tag: Optional[str] = None
+    id_material: Optional[int] = None
+    id_tag: Optional[int] = None

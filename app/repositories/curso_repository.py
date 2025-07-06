@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.curso_schema import CursoCreate, CursoRead
+from app.schemas.curso_schema import CursoCreate, CursoRead, CursoUpdate
 
 def create_curso(curso: CursoCreate):
     conn = None

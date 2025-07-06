@@ -1,6 +1,4 @@
-a.sql` para definir a estrutura de todas as tabelas. Você deve executar este script manualmente no banco de dados que acabou de criar.
-
-* **Opção 1 (Via Ferramenta Gráfic# unb_archive
+# unb_archive
 
 # Projeto de API com FastAPI e PostgreSQL
 
@@ -53,8 +51,6 @@ pip install -r requirements.txt
 
 ## 🗄️ Configuração do Banco de Dados
 
-## 🗄️ Configuração do Banco de Dados
-
 **1. Criar o Banco de Dados**
 Abra uma ferramenta de gerenciamento do PostgreSQL (como o `psql` ou pgAdmin) e crie um novo banco de dados vazio.
 ```sql
@@ -62,7 +58,9 @@ CREATE DATABASE unb_archive;
 ```
 
 **2. Criar as Tabelas (Executar o Schema)**
-Este projeto usa um arquivo `schema):**
+Este projeto usa um arquivo `schema.sql` para definir a estrutura de todas as tabelas. Você deve executar este script manualmente no banco de dados que acabou de criar.
+
+* **Opção 1 (Via Ferramenta Gráfica):**
     1.  Abra o banco `unb_archive` no pgAdmin ou DBeaver.
     2.  Abra uma janela de query.
     3.  Copie todo o conteúdo do arquivo **`database/schema.sql`** e cole na janela de query.
@@ -87,7 +85,6 @@ Este projeto usa um arquivo `.env` para gerenciar a string de conexão.
     ```env
     DATABASE_URL="postgresql://postgres:SUA_SENHA_AQUI@localhost:5432/unb_archive"
     ```
-```
 
 ## ▶️ Rodando a Aplicação
 
@@ -102,3 +99,4 @@ Com o ambiente configurado e o banco de dados pronto, você pode iniciar o servi
 3.  O terminal deverá exibir uma mensagem indicando que o servidor está rodando, algo como:
     ```
     INFO:     Uvicorn running on [http://127.0.0.1:8000](http://127.0.0.1:8000) (Press CTRL+C to quit)
+    ```

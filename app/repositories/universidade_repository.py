@@ -109,3 +109,47 @@ def update_universidade(ies: int, data: UniversidadeUpdate):
     finally:
         if conn:
             conn.close()
+
+
+def get_universidade_usuarios(ies: int):
+    """
+    Função para acessar todos os usuários de uma Universidade específica cadastrada no banco de dados, pelo número do IES
+    """
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT * FROM Usuarios
+                WHERE Usuarios.id_universidade = %s;
+                """,
+                (ies,)
+            )
+            return cur.fetchone()
+    finally:
+        if conn:
+            conn.close()
+
+def delete_by_ies(ies: int) -> int:
+    """
+    Deleta uma Universidade em cascata.
+    """
+    conn = None
+    try:
+        conn =  cria_conexao_db()
+        with conn.cursor() as cur:
+
+            cur.execute("DELETE FROM Universidade WHERE ies = %s;", (ies,))
+            linhas_deletadas = cur.rowcount
+
+            conn.commit()
+
+            return linhas_deletadas
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        raise e
+    finally:
+        if conn:
+            conn.close()

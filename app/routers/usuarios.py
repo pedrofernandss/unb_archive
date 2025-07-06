@@ -98,3 +98,17 @@ def update_docente(cpf: str, docente_data: DocenteUpdate):
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Erro ao criar docente: {e}"
         )
+
+@router.delete("/{cpf}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user_and_dependencies(cpf: str):
+    """Endpoint para deletar um usuário e todas as suas dependências"""
+    
+    deleted_count = usuario_repository.delete_by_cpf(cpf)
+    
+    if not deleted_count:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuário com CPF {cpf} não encontrado."
+        )
+        
+    return

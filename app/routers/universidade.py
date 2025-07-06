@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, status
-from app.repositories import universidade_repository
+from app.repositories import universidade_repository, usuario_repository
 from app.schemas.universidade_schema import UniversidadeRead, UniversidadeCreate, UniversidadeUpdate
 
 router = APIRouter()
@@ -24,3 +24,12 @@ def get_universidade_by_ies(ies: int):
 def update_universidade_by_ies(ies: int, update_data: UniversidadeUpdate):
     """Endpoint para atualizar uma universidade específica."""
     return universidade_repository.update_universidade(ies, update_data)
+
+@router.delete("/universidade/{ies}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_universidade(ies: int):
+    """
+    Deleta uma universidade e todas as suas dependências em cascata.
+    """
+    universidade_repository.delete_by_ies(ies)
+        
+    return

@@ -104,7 +104,6 @@ def update_departamento(id: int, departamento_data: DepartamentoUpdate):
     """
     Atualiza um departamento no banco de dados.
     """
-
     conn = None
     try:
         conn = cria_conexao_db()
@@ -121,6 +120,51 @@ def update_departamento(id: int, departamento_data: DepartamentoUpdate):
             )
 
             return cur.fetchone()
+    finally:
+        if conn:
+            conn.close()
+
+def delete_departamento_by_id_cascade(id_departamento: int) -> int:
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor() as cur:
+            
+            cur.execute("SELECT codigo FROM Disciplina WHERE id_departamento = %s;", (id_departamento,))
+            disciplinas_tuples = cur.fetchall()
+            
+            if disciplinas_tuples:
+                disciplina_ids = tuple([item[0] for item in disciplinas_tuples])
+               
+                cur.execute("SELECT id_material FROM Material WHERE id_disciplina IN %s;", (disciplina_ids,))  # Encontra todos os materiais dessas disciplinas
+                materiais_tuples = cur.fetchall()
+
+                if materiais_tuples:
+                    material_ids = tuple([item[0] for item in materiais_tuples])
+                   
+                    cur.execute("DELETE FROM Possui WHERE id_material IN %s;", (material_ids,))
+                    cur.execute("DELETE FROM Avalia WHERE id_material IN %s;", (material_ids,))
+                    cur.execute("DELETE FROM Avaliacao WHERE id_material IN %s;", (material_ids,))
+                    cur.execute("DELETE FROM Compartilha_Produz WHERE id_material IN %s;", (material_ids,))
+                    cur.execute("DELETE FROM Material WHERE id_disciplina IN %s;", (disciplina_ids,))
+                cur.execute("DELETE FROM Disciplina WHERE id_departamento = %s;", (id_departamento,))
+
+            cur.execute("SELECT cpf FROM Usuario WHERE id_departamento = %s;", (id_departamento,))
+            usuarios_tuples = cur.fetchall()
+            if usuarios_tuples:
+                usuario_cpfs = tuple([item[0] for item in usuarios_tuples])
+                cur.execute("DELETE FROM Discente WHERE id_usuario_discente IN %s;", (usuario_cpfs,))
+                cur.execute("DELETE FROM Docente WHERE id_usuario_docente IN %s;", (usuario_cpfs,))
+                cur.execute("DELETE FROM Usuario WHERE id_departamento = %s;", (id_departamento,))
+            
+            cur.execute("DELETE FROM Curso WHERE departamento_curso = %s;", (id_departamento,))
+            cur.execute("DELETE FROM Escolaridade WHERE departamento_escolaridade = %s;", (id_departamento,))
+
+            cur.execute("DELETE FROM Departamento WHERE id_departamento = %s;", (id_departamento,))
+            linhas_deletadas = cur.rowcount
+            
+            conn.commit()
+            return linhas_deletadas
     finally:
         if conn:
             conn.close()
