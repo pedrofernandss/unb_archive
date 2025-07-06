@@ -9,3 +9,6 @@ class CursoCreate(CursoBase):
 
 class CursoRead(CursoBase):
     pass
+
+class CursoUpdate(BaseModel):
+    curso: str

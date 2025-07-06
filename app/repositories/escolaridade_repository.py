@@ -56,3 +56,48 @@ def get_escolaridades_by_departamento(departamento_id: int):
     finally:
         if conn:
             conn.close()
+            
+def update_escolaridade(escolaridade_nome: str, departamento_id: int, escolaridade_data: EscolaridadeUpdate):
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                UPDATE Escolaridade
+                SET escolaridade = %s
+                WHERE escolaridade = %s AND departamento_escolaridade = %s
+                RETURNING *;
+                """,
+                (escolaridade_data.escolaridade, escolaridade_nome, departamento_id)
+            )
+            updated_escolaridade = cur.fetchone()
+            conn.commit()
+            return updated_escolaridade
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao atualizar escolaridade: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+def delete_escolaridade(escolaridade_nome: str, departamento_id: int):
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM Escolaridade WHERE escolaridade = %s AND departamento_escolaridade = %s",
+                (escolaridade_nome, departamento_id)
+            )
+            conn.commit()
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao deletar escolaridade: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()

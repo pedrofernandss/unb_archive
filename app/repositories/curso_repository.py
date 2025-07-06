@@ -53,3 +53,48 @@ def get_cursos_by_departamento(departamento_id: int):
     finally:
         if conn:
             conn.close()
+
+def update_curso(curso_nome: str, departamento_id: int, curso_data: CursoUpdate):
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                UPDATE Curso
+                SET curso = %s
+                WHERE curso = %s AND departamento_curso = %s
+                RETURNING *;
+                """,
+                (curso_data.curso, curso_nome, departamento_id)
+            )
+            updated_curso = cur.fetchone()
+            conn.commit()
+            return updated_curso
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao atualizar curso: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+def delete_curso(curso_nome: str, departamento_id: int):
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM Curso WHERE curso = %s AND departamento_curso = %s",
+                (curso_nome, departamento_id)
+            )
+            conn.commit()
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao deletar curso: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()

@@ -9,3 +9,6 @@ class EscolaridadeCreate(EscolaridadeBase):
 
 class EscolaridadeRead(EscolaridadeBase):
     pass
+
+class EscolaridadeUpdate(BaseModel):
+    escolaridade: str

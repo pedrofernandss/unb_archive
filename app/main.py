@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento
+
 from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento, avaliacao, avalia
 from fastapi.staticfiles import StaticFiles
 
@@ -63,7 +65,6 @@ app.include_router(
     tags=["Escolaridade"]
 )
 
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
 
 @app.get("/", tags=["Root"])
 def read_root():
