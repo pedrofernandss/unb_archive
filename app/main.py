@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.routers import usuarios, universidade, departamento, material, tag, possui
 from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento
 
 from app.routers import disciplina, curso, escolaridade, reputacao, usuarios, universidade, departamento, avaliacao, avalia
@@ -21,6 +22,24 @@ app.include_router(
     departamento.router, 
     prefix="/api/v1", 
     tags=["Departamento"]
+)
+
+app.include_router(
+    material.router,
+    prefix="/api/v1",
+    tags=["Material"]
+)
+
+app.include_router(
+    tag.router,
+    prefix="/api/v1",
+    tags=["tag"]
+)
+
+app.include_router(
+    possui.router,
+    prefix="/api/v1",
+    tags=["possui"]
 )
 
 app.include_router(
