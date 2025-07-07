@@ -57,30 +57,6 @@ def get_all_avalias():
         if conn: 
             conn.close()
 
-def get_avalia_by_id(id_avalia: int):
-    """
-    Função para acessar a avalia por id 
-    """
-    conn = None
-    try: 
-        conn = cria_conexao_db()
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                """
-                SELECT * FROM Avalia
-                WHERE Avalia.id_avalia = %s;
-                """,
-                (id_avalia,)
-            )
-
-            return cur.fetchone()
-    except psycopg.Error as e:
-        print(f"Erro ao buscar avaliações por id: {e}")
-        raise
-    finally:
-        if conn: 
-            conn.close()
-
 def get_avalia_by_docente(iddocente: str):
     """
     Função para acessar a avalia por docente
@@ -127,61 +103,56 @@ def get_avalia_by_material(idmaterial: int):
         if conn: 
             conn.close()
 
-def update_avalia(id_avalia: int, data: AvaliaUpdate):
-    """
-    Atualiza uma avaliacao no banco de dados com.
-    """
-    update_data = data.model_dump(exclude_unset=True) #Transforma os dados recebidos em dicionário, para mapear o que será atualizado
+def update_avalia(iddocente: str, idmaterial: int, data: AvaliaUpdate):
+    """Atualiza uma avaliacao no banco de dados."""
+    update_data = data.model_dump(exclude_unset=True)
 
-    set_querie = [f"{key} = %s" for key in update_data.keys()]
-    set_querie_str = ", ".join(set_querie)
+    # Remove os identificadores para não tentar atualizá-los
+    update_data.pop('iddocente', None)
+    update_data.pop('idmaterial', None)
 
-    params_atualizacao_lista = list(update_data.values())
-    params_atualizacao_lista.append(id_avalia)
+    if not update_data:
+        return None 
+
+    set_clauses = [f"{key} = %s" for key in update_data.keys()]
+    query_str = ", ".join(set_clauses)
+
+    params = list(update_data.values()) + [iddocente, idmaterial]
 
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-
             query = f"""
                 UPDATE Avalia
-                SET {set_querie_str}
-                WHERE id_avalia = %s
+                SET {query_str}
+                WHERE iddocente = %s AND idmaterial = %s
                 RETURNING *;       
             """
-
-            cur.execute(query, tuple(params_atualizacao_lista))
-            
+            cur.execute(query, tuple(params))
             conn.commit()
-
             return cur.fetchone()
     finally:
         if conn:
             conn.close()
 
-def delete_avalia(id_avalia: int)->bool:
+def delete_avalia(iddocente: str, idmaterial: int) -> bool:
+    """Deleta uma avaliação do banco de dados usando a chave composta."""
     conn = None
-    """
-    Função para deletar uma avaliação do banco de dados.
-    Retorna True se a avaliação foi deletada, False caso contrário.
-    """
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
                 DELETE FROM Avalia
-                WHERE id_avalia = %s
-                RETURNING id_avalia; 
+                WHERE iddocente = %s AND idmaterial = %s
+                RETURNING iddocente; 
                 """,
-                (id_avalia,)
+                (iddocente, idmaterial)
             )
             deleted_record = cur.fetchone() 
             conn.commit() 
-
             return deleted_record is not None 
-
     except psycopg.Error as e:
         if conn:
             conn.rollback() 

@@ -25,49 +25,37 @@ def create_avaliacao(avalia_data: AvaliaCreate):
 
 @router.get("/avalia", response_model=List[AvaliaRead])
 def get_all_avalias():
-    """Endpoint para listar todas as universidades cadastradas."""
+    """Endpoint para listar todas as avalias cadastradas."""
     return avalia_repository.get_all_avalias()
-
-@router.get("/avalia/id/{idavalia}", response_model=AvaliaRead)
-def get_avalia_id(idavalia: int):
-    """Endpoint para listar uma avalia específica."""
-    return avalia_repository.get_avalia_by_id(idavalia)
 
 @router.get("/avalia/docente/{iddocente}", response_model=List[AvaliaRead])
 def get_avalia_by_docente(iddocente: str):
-    """Endpoint para listar uma avalia específica."""
+    """Endpoint para listar uma avalia específica por docente."""
     return avalia_repository.get_avalia_by_docente(iddocente)
 
 @router.get("/avalia/material/{idmaterial}", response_model=List[AvaliaRead])
 def get_avalia_by_material(idmaterial: int):
-    """Endpoint para listar uma avalia específica."""
+    """Endpoint para listar uma avalia específica por material."""
     return avalia_repository.get_avalia_by_material(idmaterial)
 
-@router.patch("/avalia/{id_avalia}", response_model=AvaliaRead)
-def update_avalia_by_id(id_avalia: int, update_data: AvaliaUpdate):
-    """Endpoint para atualizar uma universidade específica."""
-    return avalia_repository.update_avalia(id_avalia, update_data)
-
-@router.delete("/avalia/{id_avalia}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_avalia(id_avalia: int):
-    """
-    Endpoint para deletar uma avaliação específica.
-    Retorna status 204 No Content se a avaliação for deletada com sucesso.
-    """
-    try:
-        was_deleted = avalia_repository.delete_avalia(id_avalia)
-        
-        if not was_deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Avaliação com ID {id_avalia} não encontrada."
-            )
-        return
-
-    except Exception as e:
-        if isinstance(e, HTTPException): 
-            raise e
+@router.patch("/avalia/docente/{iddocente}/material/{idmaterial}", response_model=AvaliaRead)
+def update_avalia(iddocente: str, idmaterial: int, update_data: AvaliaUpdate):
+    """Endpoint para atualizar uma validação específica."""
+    updated = avalia_repository.update_avalia(iddocente, idmaterial, update_data)
+    if not updated:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao deletar avaliação: {e}"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Validação não encontrada."
         )
+    return updated
+
+@router.delete("/avalia/docente/{iddocente}/material/{idmaterial}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_avalia(iddocente: str, idmaterial: int):
+    """Endpoint para deletar uma validação específica."""
+    was_deleted = avalia_repository.delete_avalia(iddocente, idmaterial)
+    if not was_deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Validação não encontrada para exclusão."
+        )
+    return

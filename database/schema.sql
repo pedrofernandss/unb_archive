@@ -88,19 +88,14 @@ CREATE TABLE Avaliacao (
 );
 
 CREATE TABLE Avalia (
-    id_avalia SERIAL PRIMARY KEY,
-    id_docente VARCHAR(14),
-    id_material INTEGER,
+    iddocente VARCHAR(14),
+    idmaterial INTEGER,
     valido BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
-    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE
+    PRIMARY KEY (iddocente, idmaterial), 
+    FOREIGN KEY (iddocente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
+    FOREIGN KEY (idmaterial) REFERENCES Material(id_material) ON DELETE CASCADE
 );
 
-ALTER TABLE Docente ADD COLUMN id_avalia INTEGER;
-ALTER TABLE Docente ADD FOREIGN KEY (id_avalia) REFERENCES Avalia(id_avalia) ON DELETE SET NULL;
-
-ALTER TABLE Material ADD COLUMN id_avalia INTEGER;
-ALTER TABLE Material ADD FOREIGN KEY (id_avalia) REFERENCES Avalia(id_avalia) ON DELETE SET NULL;
 
 CREATE TABLE Compartilha_Produz (
     id_material INTEGER,
