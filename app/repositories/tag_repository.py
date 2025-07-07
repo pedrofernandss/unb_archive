@@ -100,3 +100,16 @@ def get_tag_by_id(id_tag: int):
     finally:
         if conn:
             conn.close()
+
+def delete_tag(id_tag: int):
+    conn = cria_conexao_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM Tag WHERE id_tag = %s;",
+                (id_tag,)
+            )
+            conn.commit()
+            return cur.rowcount > 0 
+    finally:
+        conn.close()

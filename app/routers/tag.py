@@ -36,3 +36,10 @@ def update_tag_by_id(id_tag: int, update_data: TagUpdate):
     if not tag_atualizada:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag não encontrada.")
     return tag_atualizada
+
+@router.delete("/tag/{id_tag}", status_code=status.HTTP_204_NO_CONTENT)
+def delete(id_tag: int):
+    result = tag_repository.delete_tag(id_tag)
+    if not result:
+        raise HTTPException(404, "Tag não encontrada para deletar.")
+    return {"detail": "Tag deletada com sucesso"}
