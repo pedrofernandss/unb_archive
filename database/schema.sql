@@ -99,10 +99,10 @@ CREATE TABLE Avalia (
 
 CREATE TABLE Compartilha_Produz (
     id_material INTEGER,
-    id_docente VARCHAR(14),
-    PRIMARY KEY (id_material, id_docente),
+    cpf_usuario VARCHAR(14), 
+    PRIMARY KEY (id_material, cpf_usuario),
     FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE,
-    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE
+    FOREIGN KEY (cpf_usuario) REFERENCES Usuario(cpf) ON DELETE CASCADE 
 );
 
 CREATE TABLE Tag (
