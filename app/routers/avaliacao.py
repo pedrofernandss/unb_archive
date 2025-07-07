@@ -9,44 +9,38 @@ from typing import List
 
 router = APIRouter()
 
-
 @router.post("/avaliacao", response_model=AvaliacaoRead, status_code=status.HTTP_201_CREATED)
 def create_avaliacao(avaliacao_data: AvaliacaoCreate):
     """Endpoint para cadastrar uma nova universidade no banco de dados."""
     try:
         nova_avaliacao = avaliacao_repository.create_avalicao(avaliacao_data)
         return nova_avaliacao
-
+        
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Erro ao criar Avaliação: {e}"
         )
-
-
+    
 @router.get("/avaliacao", response_model=List[AvaliacaoRead])
 def get_all_avaliacoes():
     """Endpoint para listar todas as universidades cadastradas."""
     return avaliacao_repository.get_all_avaliacoes()
 
-
-@router.get("/avaliacao/{id_avaliacao}", response_model=AvaliacaoRead)
+@router.get("/avaliacao/{idavaliacao}", response_model=AvaliacaoRead)
 def get_avaliacao_id(id: int):
     """Endpoint para listar uma avalia específica."""
     return avaliacao_repository.get_avaliacao_by_id(id)
-
 
 @router.get("/avaliacao/material/{id_material}", response_model=List[AvaliacaoRead])
 def get_avaliacao_by_material(id: int):
     """Endpoint para listar uma avalia específica."""
     return avaliacao_repository.get_avaliacao_by_material(id)
-
-
+    
 @router.patch("/avaliacao/{id_avaliacao}", response_model=AvaliacaoRead)
 def update_avaliacao_by_id(id_avaliacao: int, update_data: AvaliacaoUpdate):
     """Endpoint para atualizar uma universidade específica."""
     return avaliacao_repository.update_avaliacao(id_avaliacao, update_data)
-
 
 @router.delete("/avaliacao/{id_avaliacao}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_avaliacao(id_avaliacao: int):
@@ -56,7 +50,7 @@ def delete_avaliacao(id_avaliacao: int):
     """
     try:
         was_deleted = avaliacao_repository.delete_avaliacao(id_avaliacao)
-
+        
         if not was_deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -65,7 +59,7 @@ def delete_avaliacao(id_avaliacao: int):
         return
 
     except Exception as e:
-        if isinstance(e, HTTPException):
+        if isinstance(e, HTTPException): 
             raise e
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -3,7 +3,6 @@ from psycopg.rows import dict_row
 from app.database import cria_conexao_db
 from app.schemas.avalia_schema import AvaliaCreate, AvaliaUpdate
 
-
 def create_avalia(avalia: AvaliaCreate):
     """
     Função para cadastrar avaliacoes no banco de dados da aplicação
@@ -15,17 +14,17 @@ def create_avalia(avalia: AvaliaCreate):
 
             cur.execute(
                 """
-                INSERT INTO avalia (id_docente, id_material, valido)
+                INSERT INTO avalia (iddocente, idmaterial, valido)
                 VALUES (%s, %s, %s)
                 RETURNING *;
                 """,
-                (avalia.id_docente, avalia.id_material, avalia.valido)
+                (avalia.iddocente, avalia.idmaterial, avalia.valido)
             )
 
             avalia_cadastrada = cur.fetchone()
-
+            
             conn.commit()
-
+        
             return avalia_cadastrada
 
     except psycopg.Error as e:
@@ -37,13 +36,12 @@ def create_avalia(avalia: AvaliaCreate):
         if conn:
             conn.close()
 
-
 def get_all_avalias():
     """
     Função para acessar todas as universidades cadastradas no banco de dados da aplicação
     """
     conn = None
-    try:
+    try: 
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -56,16 +54,15 @@ def get_all_avalias():
             conn.commit()
             return avalias
     finally:
-        if conn:
+        if conn: 
             conn.close()
-
 
 def get_avalia_by_id(id_avalia: int):
     """
     Função para acessar a avalia por id 
     """
     conn = None
-    try:
+    try: 
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -81,65 +78,60 @@ def get_avalia_by_id(id_avalia: int):
         print(f"Erro ao buscar avaliações por id: {e}")
         raise
     finally:
-        if conn:
+        if conn: 
             conn.close()
 
-
-def get_avalia_by_docente(id_docente: str):
+def get_avalia_by_docente(iddocente: str):
     """
     Função para acessar a avalia por docente
     """
     conn = None
-    try:
+    try: 
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
                 SELECT * FROM Avalia
-                WHERE Avalia.id_docente = %s;
+                WHERE Avalia.iddocente = %s;
                 """,
-                (id_docente,)
+                (iddocente,)
             )
             return cur.fetchall()
     except psycopg.Error as e:
         print(f"Erro ao buscar avaliações por docente: {e}")
         raise
     finally:
-        if conn:
+        if conn: 
             conn.close()
 
-
-def get_avalia_by_material(id_material: int):
+def get_avalia_by_material(idmaterial: int):
     """
     Função para acessar a avalia por docente
     """
     conn = None
-    try:
+    try: 
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
                 SELECT * FROM Avalia
-                WHERE Avalia.id_material = %s;
+                WHERE Avalia.idmaterial = %s;
                 """,
-                (id_material,)
+                (idmaterial,)
             )
             return cur.fetchall()
     except psycopg.Error as e:
         print(f"Erro ao buscar avaliações por material: {e}")
         raise
     finally:
-        if conn:
+        if conn: 
             conn.close()
-
 
 def update_avalia(id_avalia: int, data: AvaliaUpdate):
     """
     Atualiza uma avaliacao no banco de dados com.
     """
-    update_data = data.model_dump(
-        # Transforma os dados recebidos em dicionário, para mapear o que será atualizado
-        exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True) #Transforma os dados recebidos em dicionário, para mapear o que será atualizado
 
     set_querie = [f"{key} = %s" for key in update_data.keys()]
     set_querie_str = ", ".join(set_querie)
@@ -160,7 +152,7 @@ def update_avalia(id_avalia: int, data: AvaliaUpdate):
             """
 
             cur.execute(query, tuple(params_atualizacao_lista))
-
+            
             conn.commit()
 
             return cur.fetchone()
@@ -168,8 +160,7 @@ def update_avalia(id_avalia: int, data: AvaliaUpdate):
         if conn:
             conn.close()
 
-
-def delete_avalia(id_avalia: int) -> bool:
+def delete_avalia(id_avalia: int)->bool:
     conn = None
     """
     Função para deletar uma avaliação do banco de dados.
@@ -186,16 +177,16 @@ def delete_avalia(id_avalia: int) -> bool:
                 """,
                 (id_avalia,)
             )
-            deleted_record = cur.fetchone()
-            conn.commit()
+            deleted_record = cur.fetchone() 
+            conn.commit() 
 
-            return deleted_record is not None
+            return deleted_record is not None 
 
     except psycopg.Error as e:
         if conn:
-            conn.rollback()
+            conn.rollback() 
         print(f"Erro ao deletar avaliação: {e}")
-        raise
+        raise 
     finally:
         if conn:
             conn.close()

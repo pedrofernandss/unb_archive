@@ -4,7 +4,7 @@ from app.database import cria_conexao_db
 from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 
 
-def create_material(nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina):
+def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina):
     """
     Insere um novo material no banco, incluindo o PDF como binário.
     """
@@ -14,16 +14,16 @@ def create_material(nome, descricao, ano_semestre_ref, local_arquivo, id_discipl
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina)
+                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina)
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING id_material, nome, descricao, ano_semestre_ref, id_disciplina;
+                RETURNING id_material, nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina;
                 """,
                 (
                     nome,
                     descricao,
                     ano_semestre_ref,
                     local_arquivo,  # ✅ Aqui é o PDF binário!
-                    id_disciplina
+                    iddisciplina
                 )
             )
             material = cur.fetchone()

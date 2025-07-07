@@ -15,7 +15,7 @@ async def create_material(
     descricao: str = Form(...),
     ano_semestre_ref: str = Form(...),
     arquivo: UploadFile = File(...),
-    id_disciplina: int = Form(...)
+    iddisciplina: int = Form(...)
 ):
     try:
         conteudo_pdf = await arquivo.read()
@@ -25,7 +25,7 @@ async def create_material(
             descricao=descricao,
             ano_semestre_ref=ano_semestre_ref,
             local_arquivo=conteudo_pdf,
-            id_disciplina=id_disciplina
+            iddisciplina=iddisciplina
         )
 
         return novo_material

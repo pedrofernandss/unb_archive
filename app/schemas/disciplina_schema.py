@@ -4,7 +4,7 @@ from typing import Optional
 
 class DisciplinaBase(BaseModel):
     nome: Optional[str] = None
-    id_departamento: int
+    iddepartamento: int
 
 
 class DisciplinaCreate(DisciplinaBase):
@@ -17,4 +17,4 @@ class DisciplinaRead(DisciplinaBase):
 
 class DisciplinaUpdate(BaseModel):
     nome: Optional[str] = None
-    id_departamento: Optional[int] = None
+    iddepartamento: Optional[int] = None

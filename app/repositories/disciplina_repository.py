@@ -10,11 +10,11 @@ def create_disciplina(disciplina: DisciplinaCreate):
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO Disciplina (nome, id_departamento)
+                INSERT INTO Disciplina (nome, iddepartamento)
                 VALUES (%s, %s)
                 RETURNING *;
                 """,
-                (disciplina.nome, disciplina.id_departamento)
+                (disciplina.nome, disciplina.iddepartamento)
             )
             disciplina_cadastrada = cur.fetchone()
             conn.commit()
@@ -66,9 +66,9 @@ def update_disciplina(codigo: int, disciplina_data: DisciplinaUpdate):
                 update_fields.append("nome = %s")
                 params.append(disciplina_data.nome)
                 
-            if disciplina_data.id_departamento is not None:
-                update_fields.append("id_departamento = %s")
-                params.append(disciplina_data.id_departamento)
+            if disciplina_data.iddepartamento is not None:
+                update_fields.append("iddepartamento = %s")
+                params.append(disciplina_data.iddepartamento)
                 
             params.append(codigo)
             
