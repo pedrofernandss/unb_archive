@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from typing import List
 from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 from app.repositories import material_repository
+import io
 
 router = APIRouter(
-    prefix="/material",  # <-- 🔑 prefixa todas as rotas!
-    tags=["Material"],   # Opcional: organiza no Swagger
+    prefix="/material",
+    tags=["Material"], 
 )
 
 
@@ -46,6 +48,20 @@ def get_by_id(id_material: int):
     if not result:
         raise HTTPException(404, "Material não encontrado.")
     return result
+
+@router.get("/{id_material}/download")
+def download_pdf(id_material: int):
+    material = material_repository.get_material_by_id(id_material)
+    if not material or not material.get("local_arquivo"):
+        raise HTTPException(status_code=404, detail="PDF não encontrado.")
+
+    pdf_bytes = material["local_arquivo"]
+
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=material_{id_material}.pdf"}
+    )
 
 
 @router.put("/{id_material}", response_model=MaterialRead)

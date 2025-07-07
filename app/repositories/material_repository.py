@@ -4,26 +4,23 @@ from app.database import cria_conexao_db
 from app.schemas.material_schema import MaterialCreate, MaterialRead, MaterialUpdate
 
 
-def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina):
-    """
-    Insere um novo material no banco, incluindo o PDF como binário.
-    """
+def create_material(nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina):
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina)
+                INSERT INTO Material (nome, descricao, ano_semestre_ref, local_arquivo, id_disciplina)
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING id_material, nome, descricao, ano_semestre_ref, local_arquivo, iddisciplina;
+                RETURNING id_material, nome, descricao, ano_semestre_ref, local_arquivo,  id_disciplina;
                 """,
                 (
                     nome,
                     descricao,
                     ano_semestre_ref,
-                    local_arquivo,  # ✅ Aqui é o PDF binário!
-                    iddisciplina
+                    local_arquivo,
+                    id_disciplina
                 )
             )
             material = cur.fetchone()
@@ -41,16 +38,13 @@ def create_material(nome, descricao, ano_semestre_ref, local_arquivo, iddiscipli
 
 
 def get_all_materiais():
-    """
-    Função para acessar todas os materiais cadastradas no banco de dados da aplicação
-    """
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                SELECT *  
+                SELECT id_material, nome, descricao, ano_semestre_ref, id_disciplina, id_avalia
                 FROM Material
                 """
             )
@@ -81,11 +75,10 @@ def get_material_by_id(id_material: int):
 
 
 def update_material(id_material: int, data: MaterialUpdate):
-    # Pega só os campos enviados
     update_data = data.model_dump(exclude_unset=True)
 
     if not update_data:
-        return None  # Nada para atualizar
+        return None 
 
     set_query = [f"{key} = %s" for key in update_data.keys()]
     set_query_str = ", ".join(set_query)
@@ -120,6 +113,6 @@ def delete_material(id_material: int):
                 (id_material,)
             )
             conn.commit()
-            return cur.rowcount > 0  # True se deletou algo
+            return cur.rowcount > 0 
     finally:
         conn.close()
