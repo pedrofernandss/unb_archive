@@ -6,7 +6,7 @@ class MaterialBase(BaseModel):
     nome: str
     descricao: str
     ano_semestre_ref: str
-    iddisciplina: int
+    id_disciplina: int
 
 
 class MaterialCreate(MaterialBase):
