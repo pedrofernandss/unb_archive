@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import usuarios, universidade, departamento, material, tag, possui, disciplina, curso, escolaridade, reputacao, avaliacao, avalia, compartilha_produz
+from app.routers import usuarios, universidade, departamento, material, tag, possui, disciplina, curso, escolaridade, reputacao, avaliacao, avalia, compartilha_produz, procedure
 
 app = FastAPI(
     title="UnB Archive API",
@@ -83,6 +83,12 @@ app.include_router(
     compartilha_produz.router,
     prefix="/api/v1",
     tags=["associacoes"]
+)
+
+app.include_router(
+    procedure.router,
+    prefix="/api/v1",
+    tags=["Procedures"]
 )
 
 @app.get("/", tags=["Root"])
