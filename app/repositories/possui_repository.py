@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.possui_schema import PossuiCreate, PossuiUpdate
+from app.schemas.possui_schema import PossuiCreate
 
 def create_possui(possui: PossuiCreate):
     conn = None
@@ -11,78 +11,60 @@ def create_possui(possui: PossuiCreate):
             cur.execute("""
                 INSERT INTO Possui (id_material, id_tag)
                 VALUES (%s, %s)
-                RETURNING id_possui, id_material, id_tag;
-            """, (possui.id_material, possui.id_tag)
-            )
-            novo_possui = cur.fetchone()
+                RETURNING id_material, id_tag;
+            """, (possui.id_material, possui.id_tag))
+            novo = cur.fetchone()
             conn.commit()
-            return novo_possui
-        
-    except psycopg.Error as e:
-        if conn:
-            conn.rollback()
-        raise e
+            return novo
     finally:
         if conn:
             conn.close()
 
-def get_all_possuir():
+def delete_possui(id_material: int, id_tag: int):
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM Possui 
+                WHERE id_material = %s AND id_tag = %s
+                RETURNING *;
+            """, (id_material, id_tag))
+            deleted = cur.fetchone()
+            conn.commit()
+            return deleted is not None
+    finally:
+        if conn:
+            conn.close()
+
+def get_tags_by_material(id_material: int):
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute("SELECT id_possui, id_material, id_tag FROM Possui")
+            cur.execute("""
+                SELECT t.id_tag, t.nome_tag
+                FROM Tag t
+                JOIN Possui p ON t.id_tag = p.id_tag
+                WHERE p.id_material = %s;
+            """, (id_material,))
             return cur.fetchall()
     finally:
         if conn:
             conn.close()
 
-def get_possuir_by_id(id_possui: int):
+def get_materiais_by_tag(id_tag: int):
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                "SELECT * FROM Possui WHERE id_possui = %s",
-                (id_possui,)
-            )
-            return cur.fetchone()
-    finally:
-        if conn:
-            conn.close()
-
-def update_possuir(id_possui: int, data: PossuiUpdate):
-    update_data = data.model_dump(exclude_unset=True)
-    set_query = [f"{key} = %s" for key in update_data.keys()]
-    query_str = ", ".join(set_query)
-    params = list(update_data.values()) + [id_possui]
-
-    conn = None
-    try:
-        conn = cria_conexao_db()
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                f"UPDATE Possui SET {query_str} WHERE id_possui = %s RETURNING *;",
-                tuple(params)
-            )
-            conn.commit()
-            return cur.fetchone()
-    finally:
-        if conn:
-            conn.close()
-
-def delete_possuir(id_possui: int) -> bool:
-    conn = None
-    try:
-        conn = cria_conexao_db()
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                "DELETE FROM Possui WHERE id_possui = %s RETURNING id_possui;",
-                (id_possui,)
-            )
-            deleted = cur.fetchone()
-            conn.commit()
-            return deleted is not None
+            cur.execute("""
+                SELECT m.id_material, m.nome, m.descricao, m.ano_semestre_ref, m.id_disciplina
+                FROM Material m
+                JOIN Possui p ON m.id_material = p.id_material
+                WHERE p.id_tag = %s;
+            """, (id_tag,))
+            return cur.fetchall()
     finally:
         if conn:
             conn.close()
