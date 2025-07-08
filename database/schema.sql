@@ -88,12 +88,12 @@ CREATE TABLE Avaliacao (
 );
 
 CREATE TABLE Avalia (
-    iddocente VARCHAR(14),
-    idmaterial INTEGER,
+    id_docente VARCHAR(14),
+    id_material INTEGER,
     valido BOOLEAN DEFAULT TRUE,
-    PRIMARY KEY (iddocente, idmaterial), 
-    FOREIGN KEY (iddocente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
-    FOREIGN KEY (idmaterial) REFERENCES Material(id_material) ON DELETE CASCADE
+    PRIMARY KEY (id_docente, id_material), 
+    FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
+    FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE
 );
 
 

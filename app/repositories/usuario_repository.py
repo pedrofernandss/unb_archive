@@ -10,10 +10,10 @@ def _create_base_user(cursor, user: UsuarioCreate):
     """
     cursor.execute(
         """
-        INSERT INTO Usuario (cpf, nome, senha, email, id_departamento, matricula)
-        VALUES (%s, %s, %s, %s, %s, %s);
+        INSERT INTO Usuario (cpf, nome, senha, email, id_universidade, id_departamento, matricula)
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
         """,
-        (user.cpf, user.nome, user.senha, user.email,
+        (user.cpf, user.nome, user.senha, user.email, user.id_universidade,
          user.id_departamento, user.matricula)
     )
 

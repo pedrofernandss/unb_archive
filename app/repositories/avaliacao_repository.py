@@ -3,6 +3,7 @@ from psycopg.rows import dict_row
 from app.database import cria_conexao_db
 from app.schemas.avaliacao_schema import AvaliacaoCreate, AvaliacaoUpdate
 
+
 def create_avalicao(avaliacao: AvaliacaoCreate):
     """
     Função para cadastrar avaliacoes no banco de dados da aplicação
@@ -14,17 +15,17 @@ def create_avalicao(avaliacao: AvaliacaoCreate):
 
             cur.execute(
                 """
-                INSERT INTO avaliacao (data_avaliacao, nota, idMaterial)
+                INSERT INTO avaliacao (data_avaliacao, nota, id_material)
                 VALUES (%s, %s, %s)
                 RETURNING *;
                 """,
-                (avaliacao.data_avaliacao, avaliacao.nota, avaliacao.idmaterial)
+                (avaliacao.data_avaliacao, avaliacao.nota, avaliacao.id_material)
             )
 
             avalicao_cadastrada = cur.fetchone()
-            
+
             conn.commit()
-        
+
             return avalicao_cadastrada
 
     except psycopg.Error as e:
@@ -36,12 +37,13 @@ def create_avalicao(avaliacao: AvaliacaoCreate):
         if conn:
             conn.close()
 
+
 def get_all_avaliacoes():
     """
     Função para acessar todas as avaliações cadastradas no banco de dados da aplicação
     """
     conn = None
-    try: 
+    try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -54,15 +56,16 @@ def get_all_avaliacoes():
             conn.commit()
             return avaliacoes
     finally:
-        if conn: 
+        if conn:
             conn.close()
+
 
 def get_avaliacao_by_id(id_avaliacao: int):
     """
     Função para acessar a avaliçao por id 
     """
     conn = None
-    try: 
+    try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -78,15 +81,16 @@ def get_avaliacao_by_id(id_avaliacao: int):
         print(f"Erro ao buscar avaliações por id: {e}")
         raise
     finally:
-        if conn: 
+        if conn:
             conn.close()
+
 
 def get_avaliacao_by_material(id_material: int):
     """
     Função para acessar a avaliação por material
     """
     conn = None
-    try: 
+    try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -94,7 +98,7 @@ def get_avaliacao_by_material(id_material: int):
                 SELECT *
                 FROM Avaliacao A
                 INNER JOIN Material M
-                ON A.idmaterial = M.id_material
+                ON A.id_material = M.id_material
                 WHERE M.id_material = %s;
                 """,
                 (id_material,)
@@ -104,7 +108,7 @@ def get_avaliacao_by_material(id_material: int):
         print(f"Erro ao buscar avaliações por docente: {e}")
         raise
     finally:
-        if conn: 
+        if conn:
             conn.close()
 
 
@@ -112,7 +116,7 @@ def update_avaliacao(id_avaliacao: int, data: AvaliacaoUpdate):
     """
     Atualiza uma avaliacao no banco de dados
     """
-    update_data = data.model_dump(exclude_unset=True) 
+    update_data = data.model_dump(exclude_unset=True)
 
     set_querie = [f"{key} = %s" for key in update_data.keys()]
     set_querie_str = ", ".join(set_querie)
@@ -133,7 +137,7 @@ def update_avaliacao(id_avaliacao: int, data: AvaliacaoUpdate):
             """
 
             cur.execute(query, tuple(params_atualizacao_lista))
-            
+
             conn.commit()
 
             return cur.fetchone()
@@ -141,7 +145,8 @@ def update_avaliacao(id_avaliacao: int, data: AvaliacaoUpdate):
         if conn:
             conn.close()
 
-def delete_avaliacao(id_avaliacao: int)->bool:
+
+def delete_avaliacao(id_avaliacao: int) -> bool:
     conn = None
     """
     Função para deletar uma avaliação do banco de dados.
@@ -158,16 +163,16 @@ def delete_avaliacao(id_avaliacao: int)->bool:
                 """,
                 (id_avaliacao,)
             )
-            deleted_record = cur.fetchone() 
-            conn.commit() 
+            deleted_record = cur.fetchone()
+            conn.commit()
 
-            return deleted_record is not None 
+            return deleted_record is not None
 
     except psycopg.Error as e:
         if conn:
-            conn.rollback() 
+            conn.rollback()
         print(f"Erro ao deletar avaliação: {e}")
-        raise 
+        raise
     finally:
         if conn:
             conn.close()

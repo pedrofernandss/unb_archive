@@ -35,7 +35,7 @@ python -m venv .venv
 Agora, ative o ambiente:
 * **No Windows (PowerShell):**
     ```powershell
-    .\.venv\Scripts\Activate.ps1
+    .\.venv\Scripts\activate
     ```
 * **No macOS ou Linux:**
     ```bash

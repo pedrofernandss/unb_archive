@@ -26,7 +26,7 @@ def create_docente(docente: DocenteCreate):
             cur.execute(
                 """
                 SELECT 
-                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_departamento,
+                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_universidade, usuario.id_departamento,
                     docente.especialidade, docente.permissao_validacao
                 FROM 
                     Usuario usuario JOIN Docente docente ON usuario.cpf = docente.id_usuario_docente

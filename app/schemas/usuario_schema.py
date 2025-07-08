@@ -7,6 +7,7 @@ class UsuarioBase(BaseModel):
     nome: str
     matricula: int
     email: str
+    id_universidade: int
     id_departamento: int
 
 class DiscenteBase(UsuarioBase):

@@ -26,7 +26,7 @@ def create_discente(discente: DiscenteCreate):
             cur.execute(
                 """
                 SELECT 
-                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_departamento,
+                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_universidade, usuario.id_departamento,
                     discente.ano_ingresso, discente.status, discente.coeficiente_rendimento, discente.id_reputacao
                 FROM 
                     Usuario usuario JOIN Discente discente ON usuario.cpf = discente.id_usuario_discente
