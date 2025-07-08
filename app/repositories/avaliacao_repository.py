@@ -38,7 +38,7 @@ def create_avalicao(avaliacao: AvaliacaoCreate):
 
 def get_all_avaliacoes():
     """
-    Função para acessar todas as universidades cadastradas no banco de dados da aplicação
+    Função para acessar todas as avaliações cadastradas no banco de dados da aplicação
     """
     conn = None
     try: 
@@ -59,7 +59,7 @@ def get_all_avaliacoes():
 
 def get_avaliacao_by_id(id_avaliacao: int):
     """
-    Função para acessar a avalia por id 
+    Função para acessar a avaliçao por id 
     """
     conn = None
     try: 
@@ -83,7 +83,7 @@ def get_avaliacao_by_id(id_avaliacao: int):
 
 def get_avaliacao_by_material(id_material: int):
     """
-    Função para acessar a avalia por docente
+    Função para acessar a avaliação por material
     """
     conn = None
     try: 
@@ -107,37 +107,12 @@ def get_avaliacao_by_material(id_material: int):
         if conn: 
             conn.close()
 
-def get_avaliacao_by_usuario(id_material: str):
-    """
-    Função para acessar a avalia por docente
-    """
-    conn = None
-    try: 
-        conn = cria_conexao_db()
-        with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                """
-                SELECT *
-                FROM Avaliacao A
-                INNER JOIN Material M
-                ON A.idmaterial = M.id_material
-                WHERE M.id_material = %s;
-                """,
-                (id_material,)
-            )
-            return cur.fetchall()
-    except psycopg.Error as e:
-        print(f"Erro ao buscar avaliações por docente: {e}")
-        raise
-    finally:
-        if conn: 
-            conn.close()
 
 def update_avaliacao(id_avaliacao: int, data: AvaliacaoUpdate):
     """
-    Atualiza uma avaliacao no banco de dados com.
+    Atualiza uma avaliacao no banco de dados
     """
-    update_data = data.model_dump(exclude_unset=True) #Transforma os dados recebidos em dicionário, para mapear o que será atualizado
+    update_data = data.model_dump(exclude_unset=True) 
 
     set_querie = [f"{key} = %s" for key in update_data.keys()]
     set_querie_str = ", ".join(set_querie)

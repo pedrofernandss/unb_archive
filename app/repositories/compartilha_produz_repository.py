@@ -25,7 +25,6 @@ def create_associacao(associacao: CompartilhaProduzCreate):
     except psycopg.Error as e:
         if conn:
             conn.rollback()
-        # Lança a exceção para ser tratada pela camada de API
         raise e
     finally:
         if conn:

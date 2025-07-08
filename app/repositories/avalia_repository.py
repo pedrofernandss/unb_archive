@@ -5,7 +5,7 @@ from app.schemas.avalia_schema import AvaliaCreate, AvaliaUpdate
 
 def create_avalia(avalia: AvaliaCreate):
     """
-    Função para cadastrar avaliacoes no banco de dados da aplicação
+    Função para cadastrar validações no banco de dados da aplicação
     """
     conn = None
     try:
@@ -38,7 +38,7 @@ def create_avalia(avalia: AvaliaCreate):
 
 def get_all_avalias():
     """
-    Função para acessar todas as universidades cadastradas no banco de dados da aplicação
+    Função para acessar todas as validações cadastradas no banco de dados da aplicação
     """
     conn = None
     try: 
@@ -59,7 +59,7 @@ def get_all_avalias():
 
 def get_avalia_by_docente(iddocente: str):
     """
-    Função para acessar a avalia por docente
+    Função para acessar a validação por docente
     """
     conn = None
     try: 
@@ -82,7 +82,7 @@ def get_avalia_by_docente(iddocente: str):
 
 def get_avalia_by_material(idmaterial: int):
     """
-    Função para acessar a avalia por docente
+    Função para acessar a validação por material
     """
     conn = None
     try: 
@@ -104,10 +104,9 @@ def get_avalia_by_material(idmaterial: int):
             conn.close()
 
 def update_avalia(iddocente: str, idmaterial: int, data: AvaliaUpdate):
-    """Atualiza uma avaliacao no banco de dados."""
+    """Atualiza uma validação no banco de dados."""
     update_data = data.model_dump(exclude_unset=True)
 
-    # Remove os identificadores para não tentar atualizá-los
     update_data.pop('iddocente', None)
     update_data.pop('idmaterial', None)
 
@@ -137,7 +136,7 @@ def update_avalia(iddocente: str, idmaterial: int, data: AvaliaUpdate):
             conn.close()
 
 def delete_avalia(iddocente: str, idmaterial: int) -> bool:
-    """Deleta uma avaliação do banco de dados usando a chave composta."""
+    """Deleta uma validação do banco de dados usando a chave composta."""
     conn = None
     try:
         conn = cria_conexao_db()

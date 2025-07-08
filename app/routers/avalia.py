@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.post("/avalia", response_model=AvaliaRead, status_code=status.HTTP_201_CREATED)
 def create_avaliacao(avalia_data: AvaliaCreate):
-    """Endpoint para cadastrar uma nova avalia no banco de dados."""
+    """Endpoint para cadastrar uma nova validação no banco de dados."""
     try:
         nova_avalia = avalia_repository.create_avalia(avalia_data)
         return nova_avalia
@@ -25,17 +25,17 @@ def create_avaliacao(avalia_data: AvaliaCreate):
 
 @router.get("/avalia", response_model=List[AvaliaRead])
 def get_all_avalias():
-    """Endpoint para listar todas as avalias cadastradas."""
+    """Endpoint para listar todas as validações cadastradas."""
     return avalia_repository.get_all_avalias()
 
 @router.get("/avalia/docente/{iddocente}", response_model=List[AvaliaRead])
 def get_avalia_by_docente(iddocente: str):
-    """Endpoint para listar uma avalia específica por docente."""
+    """Endpoint para listar uma validação específica por docente."""
     return avalia_repository.get_avalia_by_docente(iddocente)
 
 @router.get("/avalia/material/{idmaterial}", response_model=List[AvaliaRead])
 def get_avalia_by_material(idmaterial: int):
-    """Endpoint para listar uma avalia específica por material."""
+    """Endpoint para listar uma validação específica por material."""
     return avalia_repository.get_avalia_by_material(idmaterial)
 
 @router.patch("/avalia/docente/{iddocente}/material/{idmaterial}", response_model=AvaliaRead)

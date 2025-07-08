@@ -4,7 +4,7 @@ from app.schemas.procedure_schema import ValidacaoMaterialRequest
 
 def execute_gerenciar_validacao_material(request_data: ValidacaoMaterialRequest):
     """
-    Chama a stored procedure 'gerenciar_validacao_material' no banco de dados.
+    Chama a stored procedure gerenciar_validacao_material no banco de dados.
     """
     conn = None
     try:
