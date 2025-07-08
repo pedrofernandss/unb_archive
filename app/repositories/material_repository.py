@@ -44,7 +44,7 @@ def get_all_materiais():
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                SELECT id_material, nome, descricao, ano_semestre_ref, id_disciplina, id_avalia
+                SELECT id_material, nome, descricao, ano_semestre_ref, id_disciplina
                 FROM Material
                 """
             )

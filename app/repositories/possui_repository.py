@@ -68,3 +68,20 @@ def get_materiais_by_tag(id_tag: int):
     finally:
         if conn:
             conn.close()
+
+def get_all_possuir_detalhado():
+    conn = cria_conexao_db()
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("""
+            SELECT 
+                p.id_material,
+                m.nome AS nome_material,
+                m.descricao,
+                m.ano_semestre_ref,
+                p.id_tag,
+                t.nome_tag
+            FROM Possui p
+            JOIN Material m ON p.id_material = m.id_material
+            JOIN Tag t ON p.id_tag = t.id_tag;
+        """)
+        return cur.fetchall()

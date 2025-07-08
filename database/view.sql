@@ -14,10 +14,10 @@ SELECT
     STRING_AGG(DISTINCT usr.nome, ', ') AS usuarios_associados,
     STRING_AGG(DISTINCT tg.nome_tag, ', ') AS tags
 FROM Material m
-INNER JOIN Disciplina d ON m.iddisciplina = d.codigo
-INNER JOIN Departamento dep ON d.iddepartamento = dep.id_departamento
-INNER JOIN Universidade u ON dep.iduniversidade = u.ies
-LEFT JOIN Avaliacao av ON m.id_material = av.idmaterial
+INNER JOIN Disciplina d ON m.id_disciplina = d.codigo
+INNER JOIN Departamento dep ON d.id_departamento = dep.id_departamento
+INNER JOIN Universidade u ON dep.id_universidade = u.ies
+LEFT JOIN Avaliacao av ON m.id_material = av.id_material
 LEFT JOIN Compartilha_Produz cp ON m.id_material = cp.id_material
 LEFT JOIN Usuario usr ON cp.cpf_usuario = usr.cpf
 LEFT JOIN Possui p ON m.id_material = p.id_material

@@ -23,3 +23,7 @@ def get_tags_by_material(id_material: int):
 @router.get("/tag/{id_tag}/materiais", response_model=List[dict])
 def get_materiais_by_tag(id_tag: int):
     return possui_repository.get_materiais_by_tag(id_tag)
+
+@router.get("/possui-detalhado")
+def get_all_possuir_detalhado():
+    return possui_repository.get_all_possuir_detalhado()
