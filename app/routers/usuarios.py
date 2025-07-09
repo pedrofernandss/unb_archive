@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status
 from app.repositories import usuario_repository, discente_repository, docente_repository
-from app.schemas.usuario_schema import UsuarioBase, DiscenteCreate, DiscenteRead, DiscenteUpdate, DocenteCreate, DocenteRead, DocenteUpdate
+from app.schemas.usuario_schema import UsuarioBase, DiscenteCreate, DiscenteRead, DiscenteUpdate, DocenteCreate, DocenteRead, DocenteUpdate, UsuarioUpdate
 
 router = APIRouter()
 
@@ -9,6 +9,11 @@ router = APIRouter()
 def get_all_usuarios():
     """Endpoint para listar todos os usuários cadastrados, independente do tipo."""
     return usuario_repository.get_all_usuarios()
+
+@router.get("/usuarios/{cpf}", response_model=UsuarioBase)
+def get_usuario_by_cpf(cpf: str):
+    """Endpoint para acessar um usuário cadastrado, independente do tipo."""
+    return usuario_repository.get_usuario_by_cpf(cpf)
 
 @router.post("/usuarios/discente", response_model=DiscenteRead, status_code=status.HTTP_201_CREATED)
 def create_discente(discente_data: DiscenteCreate):
@@ -99,7 +104,21 @@ def update_docente(cpf: str, docente_data: DocenteUpdate):
             detail=f"Erro ao criar docente: {e}"
         )
 
-@router.delete("/{cpf}", status_code=status.HTTP_204_NO_CONTENT)
+@router.patch("/usuarios/{cpf}")
+def update_user(cpf: str, usuario_data: UsuarioUpdate):
+    """Endpoint para atualizar um usuario"""
+    try:
+        usuario_atualizado = usuario_repository.update_by_cpf(cpf, usuario_data)
+        return usuario_atualizado
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Erro ao criar docente: {e}"
+        )
+
+
+@router.delete("/usuarios/{cpf}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user_and_dependencies(cpf: str):
     """Endpoint para deletar um usuário e todas as suas dependências"""
     
