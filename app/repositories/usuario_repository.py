@@ -1,7 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from app.database import cria_conexao_db
-from app.schemas.usuario_schema import UsuarioCreate
+from app.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate
 
 
 def _create_base_user(cursor, user: UsuarioCreate):
@@ -17,6 +17,29 @@ def _create_base_user(cursor, user: UsuarioCreate):
          user.id_departamento, user.matricula)
     )
 
+def get_usuario_by_cpf(cpf: str):
+    """
+    Função para acessar um usuario cadastrado no banco de dados da aplicação, independente do tipo.
+    """
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT *  
+                FROM Usuario
+                WHERE usuario.cpf = %s;
+                """,
+                (cpf,)
+            )
+            usuario = cur.fetchone()
+            conn.commit()
+            
+            return usuario
+    finally:
+        if conn:
+            conn.close()
 
 def get_all_usuarios():
     """
@@ -35,6 +58,43 @@ def get_all_usuarios():
             todos_usuarios = cur.fetchall()
             conn.commit()
             return todos_usuarios
+    finally:
+        if conn:
+            conn.close()
+
+def update_by_cpf(cpf: str, data: UsuarioUpdate):
+    """
+    Atualiza a tabela Usuario com base nos dados fornecidos.
+    A query SQL é montada dinamicamente para uma atualização parcial.
+    """
+    update_data = data.model_dump(exclude_unset=True)
+
+    set_clauses = [f"{key} = %s" for key in update_data.keys()]
+    set_clause_str = ", ".join(set_clauses)
+
+    params = list(update_data.values())
+    params.append(cpf)
+
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
+            query = f"""
+                UPDATE Usuario
+                SET {set_clause_str}
+                WHERE cpf = %s;
+            """
+            
+            cur.execute(query, tuple(params))
+            conn.commit()
+            
+            return get_usuario_by_cpf(cpf)
+            
+    except psycopg.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"Erro ao atualizar usuário: {e}")
+        raise
     finally:
         if conn:
             conn.close()
