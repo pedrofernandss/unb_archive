@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=MaterialRead)
+@router.post("/upload", status_code=status.HTTP_201_CREATED, response_model=MaterialRead)
 async def create_material(
     nome: str = Form(...),
     descricao: str = Form(...),
