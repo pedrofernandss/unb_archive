@@ -6,7 +6,7 @@ from decimal import Decimal
 API_URL = "http://127.0.0.1:8000/api/v1"
 
 st.set_page_config(
-    page_title="Cadastro de Usuários - UNB Archive",
+    page_title="Cadastro de Usuários - UnB Archive",
     page_icon="👤",
     layout="centered"
 )
@@ -35,12 +35,9 @@ def buscar_departamentos():
         st.error(f"Não foi possível buscar os departamentos: {e}")
         return []
 
-# --- Lógica da Interface ---
-
 universidades = buscar_universidades()
 departamentos = buscar_departamentos()
 
-# Cria dicionários para mapear nomes para IDs, para os selectboxes
 if universidades:
     opcoes_universidade = {uni['nome']: uni['ies'] for uni in universidades}
 else:
@@ -59,7 +56,6 @@ tipo_usuario = st.radio(
     horizontal=True
 )
 
-# --- Formulário de Cadastro de Discente ---
 if tipo_usuario == "Discente":
     st.header("Formulário de Cadastro de Discente")
     
@@ -111,7 +107,6 @@ if tipo_usuario == "Discente":
                 except requests.exceptions.RequestException as e:
                     st.error(f"Erro de conexão com a API: {e}")
 
-# --- Formulário de Cadastro de Docente ---
 elif tipo_usuario == "Docente":
     st.header("Formulário de Cadastro de Docente")
     
