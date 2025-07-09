@@ -10,6 +10,12 @@ class UsuarioBase(BaseModel):
     id_universidade: int
     id_departamento: int
 
+class UsuarioUpdate(BaseModel):
+    nome: Optional[str] = None
+    email: Optional[str] = None
+    id_universidade: Optional[int] = None
+    id_departamento: Optional[int] = None
+
 class DiscenteBase(UsuarioBase):
     status: str
     ano_ingresso: int
