@@ -1,72 +1,123 @@
+from datetime import date
 import streamlit as st
 import requests
 import pandas as pd
-import base64 # Para futuras funcionalidades de download
+import base64
+import math
 
+# URL base da sua API FastAPI
 API_URL = "http://127.0.0.1:8000/api/v1"
 
+# Mova a configuração da página para o topo do script
 st.set_page_config(
     page_title="UnB Archive",
     page_icon="📚",
     layout="wide"
 )
 
+# Inicializa o estado da sessão para evitar recarregamentos desnecessários
 if 'user_info' not in st.session_state:
     st.session_state['user_info'] = None
+if 'materiais_completos' not in st.session_state:
+    st.session_state.materiais_completos = []
+
+# --- FUNÇÕES AUXILIARES ---
 
 def buscar_dados_api(endpoint: str):
     """Função genérica para buscar listas de dados de um endpoint da API."""
     try:
-        response = requests.get(f"{API_URL}/{endpoint}/")
+        response = requests.get(f"{API_URL}/{endpoint}", timeout=10)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
+        # Retorna None em caso de erro 404 para ser tratado individualmente
+        if e.response and e.response.status_code == 404:
+            return None
         st.error(f"Não foi possível buscar dados de '{endpoint}': {e}")
         return []
 
 def buscar_nome_por_id(endpoint: str, item_id: int):
     """Busca o nome de um item específico pelo seu ID."""
-    if not item_id:
+    if not item_id or not isinstance(item_id, int):
         return "N/A"
     try:
-        response = requests.get(f"{API_URL}/{endpoint}/{item_id}")
+        response = requests.get(f"{API_URL}/{endpoint}/{item_id}", timeout=5)
         if response.status_code == 200:
-            return response.json().get("nome", "ID não encontrado")
+            return response.json().get("nome", response.json().get("nome_tag", "ID não encontrado"))
         return f"ID {item_id} não encontrado"
     except requests.exceptions.RequestException:
         return f"Erro ao buscar ID {item_id}"
 
+# MUDANÇA: Nome da função e URL corrigidos
+@st.cache_data(ttl=60)
+def buscar_reputacao_por_cpf(cpf: str):
+    """Busca os detalhes de uma reputação específica pelo CPF do usuário."""
+    if not cpf:
+        return None
+    # CORREÇÃO: URL ajustada para "usuario" (sem acento)
+    return buscar_dados_api(f"reputacao/usuario/{cpf}")
+
+
+@st.cache_data(ttl=60) # Cache para otimizar performance
+def get_validation_status_for_material(material_id: int) -> str:
+    """Busca o status de validação de um material fazendo uma chamada à API."""
+    if not material_id:
+        return "pendente"
+    
+    validations = buscar_dados_api(f"avalia/material/{material_id}")
+    if not validations:
+        return "pendente"
+    
+    if any(not v.get('valido', True) for v in validations):
+        return "invalido"
+    
+    if any(v.get('valido', True) for v in validations):
+        return "validado"
+        
+    return "pendente"
+
+def gerar_estrelas_display(media: float, max_estrelas: int = 5) -> str:
+    """Converte uma nota média em uma string de emojis de estrelas para exibição."""
+    if media is None or not isinstance(media, (int, float)) or media < 0:
+        return "N/A"
+    estrelas_cheias = round(media)
+    estrelas_vazias = max_estrelas - estrelas_cheias
+    return "★" * estrelas_cheias + "☆" * estrelas_vazias
+
+# --- LÓGICA DA APLICAÇÃO ---
+
+# Tela de Login se o usuário não estiver logado
 if not st.session_state.get('user_info'):
     st.title("🔑 Acessar o Sistema UNB Archive")
-    st.write("Para acessar, por favor, identifique-se com seu CPF.")
-
     with st.form("login_form"):
         cpf = st.text_input("CPF do Usuário", placeholder="Digite o CPF de um usuário cadastrado")
         submitted = st.form_submit_button("Acessar")
-        
-        if submitted:
-            if not cpf:
-                st.error("Por favor, insira um CPF.")
-            else:
-                try:
-                    response = requests.get(f"{API_URL}/usuarios/{cpf}")
-                    if response.status_code == 200:
-                        st.session_state['user_info'] = response.json()
-                        st.success("Usuário encontrado! Acessando o sistema...")
-                        st.rerun()
-                    elif response.status_code == 404:
-                        st.error("Usuário não encontrado. Verifique o CPF digitado.")
-                    else:
-                        st.error(f"Erro ao buscar usuário: {response.status_code}")
-                        st.json(response.json())
-                except requests.exceptions.RequestException as e:
-                    st.error(f"Erro de conexão com a API: {e}")
+        if submitted and cpf:
+            try:
+                response = requests.get(f"{API_URL}/usuarios/discente/{cpf}")
+                if response.status_code == 404:
+                    response = requests.get(f"{API_URL}/usuarios/docente/{cpf}")
+                if response.status_code == 200:
+                    st.session_state['user_info'] = response.json()
+                    st.success("Usuário encontrado! Acessando o sistema...")
+                    st.rerun()
+                else:
+                    st.error("Usuário não encontrado. Verifique o CPF digitado.")
+            except requests.RequestException as e:
+                st.error(f"Erro de conexão com a API: {e}")
+        elif submitted:
+            st.error("Por favor, insira um CPF.")
 
+# Interface Principal após o login
 else:
+    user_info = st.session_state.get('user_info', {})
+    is_docente = 'especialidade' in user_info
+    is_discente = 'coeficiente_rendimento' in user_info
+
     col1, col2 = st.columns([4, 1])
     with col1:
         st.title(f"🏠 Bem-vindo(a) ao UnB Archive!")
-        user_display = st.session_state.get('user_info', {}).get('nome', 'Usuário')
+        user_display = user_info.get('nome', 'Usuário')
         st.subheader(f"Logado como: **{user_display}**")
     with col2:
         if st.button("Logout", use_container_width=True):
@@ -75,7 +126,6 @@ else:
             st.rerun()
 
     st.markdown("---")
-
     tab1, tab2, tab3, tab4 = st.tabs(["📤 Upload de Material", "📚 Materiais Disponíveis", "👥 Gerenciar Usuários", "👤 Meu Perfil"])
 
     with tab1:
@@ -91,16 +141,16 @@ else:
             form_col1, form_col2 = st.columns(2)
             with form_col1:
                 nome_material = st.text_input("Nome do Material")
-                disciplina_selecionada = st.selectbox("Disciplina", options=opcoes_disciplina.keys())
+                disciplina_selecionada = st.selectbox("Disciplina", options=list(opcoes_disciplina.keys()))
                 ano_semestre = st.text_input("Ano/Semestre (ex: 2024/2)")
             with form_col2:
-                tags_selecionadas = st.multiselect("Tags", options=opcoes_tag.keys())
+                tags_selecionadas = st.multiselect("Tags", options=list(opcoes_tag.keys()))
                 arquivo = st.file_uploader("Selecione o arquivo")
             descricao = st.text_area("Descrição (opcional)")
             submitted = st.form_submit_button("Enviar Material")
 
             if submitted:
-                if arquivo is not None:
+                if arquivo is not None and nome_material and disciplina_selecionada:
                     id_disciplina = opcoes_disciplina.get(disciplina_selecionada)
                     files = {'arquivo': (arquivo.name, arquivo.getvalue(), arquivo.type)}
                     material_data = {
@@ -116,59 +166,107 @@ else:
                     except requests.RequestException as e:
                         st.error(f"Erro de conexão: {e}")
                 else:
-                    st.warning("Por favor, selecione um arquivo para enviar.")
+                    st.warning("Por favor, preencha todos os campos obrigatórios e selecione um arquivo.")
 
     with tab2:
         st.header("📚 Materiais Disponíveis")
-        if st.button("Atualizar Lista de Materiais"):
-            st.rerun()
 
-        materiais = buscar_dados_api("material")
-        if materiais:
-            st.write(f"Total de materiais encontrados: {len(materiais)}")
-            col_nome, col_disciplina, col_semestre, col_download = st.columns([3, 3, 2, 2])
-            with col_nome: st.subheader("Nome do Material")
-            with col_disciplina: st.subheader("Disciplina")
-            with col_semestre: st.subheader("Semestre")
-            with col_download: st.subheader("Ação")
+        def handle_rating_click(material_id, nota_clicada):
+            try:
+                payload = {"data_avaliacao": date.today().isoformat(), "nota": float(nota_clicada), "id_material": material_id}
+                response = requests.post(f"{API_URL}/avaliacoes", json=payload)
+                response.raise_for_status()
+                st.toast(f"Sua avaliação de {nota_clicada} estrelas foi registrada!", icon="✅")
+                st.session_state.materiais_completos = []
+            except requests.RequestException as e:
+                st.error(f"Erro ao registrar avaliação: {e.response.text if e.response else e}")
+
+        def handle_validation_click(material_id, is_valid_action):
+            try:
+                payload = {"id_material": material_id, "cpf_docente": user_info['cpf'], "acao_valida": is_valid_action}
+                response = requests.post(f"{API_URL}/procedures/gerenciar-validacao", json=payload)
+                response.raise_for_status()
+                action_text = "validado" if is_valid_action else "invalidado"
+                st.toast(f"Material {action_text} com sucesso!", icon="👍")
+                st.session_state.materiais_completos = []
+            except requests.RequestException as e:
+                st.error(f"Erro ao validar: {e.response.json().get('detail', e)}")
+
+        if not st.session_state.materiais_completos or st.button("Atualizar Lista de Materiais"):
+            st.session_state.materiais_completos = buscar_dados_api("relatorios/materiais-completos")
+
+        if st.session_state.materiais_completos:
+            st.write(f"Total de materiais encontrados: {len(st.session_state.materiais_completos)}")
+            
+            col_headers = ["Nome", "Disciplina", "Semestre", "Média", "Avalie Agora!", "Status / Ação", "Baixar"]
+            col_widths = [3, 2.5, 1, 1.5, 2, 2, 1.5]
+            
+            cols = st.columns(col_widths)
+            for col, header in zip(cols, col_headers):
+                col.subheader(header)
             
             st.markdown("---")
 
-            for material in materiais:
-                col1, col2, col3, col4 = st.columns([3, 3, 2, 2])
-                with col1:
-                    st.write(material.get("nome", "N/A"))
-                with col2:
-                    
-                    id_disciplina = material.get("id_disciplina")
-                    nome_disciplina = buscar_nome_por_id("disciplina", id_disciplina)
-                    st.write(nome_disciplina)
-                with col3:
-                    st.write(material.get("ano_semestre_ref", "N/A"))
-                with col4:
-                    
-                    id_material = material.get('id_material')
+            for material in st.session_state.materiais_completos:
+                id_material = material.get('id_material')
+                status_validacao = get_validation_status_for_material(id_material)
+                is_invalid = (status_validacao == 'invalido')
+                
+                cols = st.columns(col_widths)
+                
+                with cols[0]:
+                    nome_material = material.get("material_nome", "N/A")
+                    if is_invalid:
+                        st.markdown(f":red[{nome_material}]")
+                    else:
+                        st.write(nome_material)
 
-                    if st.button("Baixar", key=f"download_{id_material}", use_container_width=True):
+                cols[1].write(material.get("disciplina_nome", "N/A"))
+                cols[2].write(material.get("ano_semestre_ref", "N/A"))
+                
+                media_geral = material.get("media_avaliacoes", 0)
+                cols[3].write(f"{gerar_estrelas_display(media_geral)} ({media_geral:.1f})")
+                
+                with cols[4]:
+                    star_cols = st.columns(5)
+                    for i in range(5):
+                        with star_cols[i]:
+                            st.button("☆", key=f"star_{i+1}_{id_material}", on_click=handle_rating_click, args=(id_material, i + 1), disabled=is_invalid)
+                
+                with cols[5]:
+                    if is_docente:
+                        validation_cols = st.columns(2)
+                        with validation_cols[0]:
+                            st.button("✔️", key=f"validar_{id_material}", help="Validar", on_click=handle_validation_click, args=(id_material, True), disabled=is_invalid)
+                        with validation_cols[1]:
+                            st.button("❌", key=f"invalidar_{id_material}", help="Invalidar", on_click=handle_validation_click, args=(id_material, False), disabled=is_invalid)
+                    else:
+                        if status_validacao == 'validado':
+                            st.markdown("✅ :green[Válido]")
+                        elif status_validacao == 'invalido':
+                            st.markdown("❌ :red[Inválido]")
+                        else:
+                            st.markdown("⏳ :orange[Em análise]")
+                
+                with cols[6]:
+                    if st.button("⬇️", key=f"download_{id_material}", help="Baixar arquivo" if not is_invalid else "Download desabilitado para material inválido", disabled=is_invalid):
                         try:
-
                             res_download = requests.get(f"{API_URL}/material/{id_material}/download")
                             if res_download.status_code == 200:
-                                file_name = f"{material.get('nome', 'arquivo')}.pdf"
-                                
+                                file_name = f"{material.get('material_nome', 'arquivo')}.pdf"
                                 b64 = base64.b64encode(res_download.content).decode()
-                                href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">Clique aqui para baixar "{file_name}"</a>'
+                                href = f'<a href="data:application/octet-stream;base64,{b64}" download="{file_name}">Clique para baixar</a>'
                                 st.markdown(href, unsafe_allow_html=True)
-                                st.success("Link de download gerado!")
                             else:
-                                st.error(f"Não foi possível obter o arquivo. Erro: {res_download.status_code}")
+                                st.error(f"Erro: {res_download.status_code}")
                         except requests.RequestException as e:
-                            st.error(f"Erro de conexão ao tentar baixar: {e}")
+                            st.error(f"Erro de conexão: {e}")
+
         else:
             st.info("Nenhum material disponível no momento.")
 
     with tab3:
-        st.header("👥 Lista de Usuários do Sistema")
+        st.header("👥 Gerenciar Usuários")
         if st.button("Carregar Lista de Usuários"):
             usuarios = buscar_dados_api("usuarios")
             if usuarios:
@@ -200,10 +298,22 @@ else:
     
     with tab4:
         st.header("👤 Gerenciar Meu Perfil")
-
-        user_info = st.session_state.get('user_info')
-
         if user_info:
+            
+            # MUDANÇA: Lógica para exibir a reputação do discente
+            if is_discente:
+                st.subheader("Minha Reputação")
+                # CORREÇÃO: Usa a nova função para buscar reputação pelo CPF
+                reputacao_info = buscar_reputacao_por_cpf(user_info['cpf'])
+                
+                if reputacao_info:
+                    rep_col1, rep_col2 = st.columns(2)
+                    rep_col1.metric(label="Nível de Reputação", value=reputacao_info.get('nivel', 'N/A'))
+                    rep_col2.metric(label="Pontuação Total", value=str(reputacao_info.get('pontuacao', 0)))
+                else:
+                    st.info("Você ainda não possui uma reputação. Comece a interagir para construir a sua!")
+                st.markdown("---")
+
             with st.expander("✏️ Editar minhas informações", expanded=True):
                 
                 universidades = buscar_dados_api("universidade")
@@ -231,7 +341,6 @@ else:
 
                     nova_universidade_nome = st.selectbox("Universidade", options=lista_nomes_uni, index=default_uni_index)
                     novo_departamento_nome = st.selectbox("Departamento", options=lista_nomes_depto, index=default_depto_index)
-
                     nova_senha = st.text_input("Nova Senha (deixe em branco para não alterar)", type="password")
                     
                     edit_submitted = st.form_submit_button("Salvar Alterações")
@@ -270,18 +379,14 @@ else:
                                 st.error(f"Erro de conexão: {e}")
 
             st.markdown("---")
-
             with st.expander("🗑️ Excluir minha conta"):
-                st.warning("**Atenção:** Esta ação é permanente e não pode ser desfeita. Todos os seus dados serão apagados.")
-                
+                st.warning("**Atenção:** Esta ação é permanente e não pode ser desfeita.")
                 confirmation_check = st.checkbox("Eu entendo as consequências e desejo excluir minha conta.")
-                
                 if confirmation_check:
                     if st.button("Excluir meu perfil permanentemente", type="primary"):
                         try:
                             user_cpf = user_info.get('cpf')
-                            response = requests.delete(f"{API_URL}/usuarios/{user_cpf}")
-                            
+                            response = requests.delete(f"{API_URL}/usuarios/{cpf}")
                             if response.status_code == 204:
                                 st.success("Sua conta foi excluída com sucesso. Você será desconectado.")
                                 for key in st.session_state.keys():

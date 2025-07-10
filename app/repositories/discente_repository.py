@@ -6,32 +6,47 @@ from . import usuario_repository
 
 def create_discente(discente: DiscenteCreate):
     """
-    Função para cadastrar discentes no banco de dados da aplicação
+    Função para cadastrar discentes no banco de dados da aplicação.
+    Agora, também cria uma reputação padrão para o novo discente.
     """
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
+            # 1. Cria o registro na tabela Usuario
             usuario_repository._create_base_user(cur, discente)
 
+            # 2. Cria uma reputação padrão para o novo discente
             cur.execute(
                 """
-                INSERT INTO Discente (id_usuario_discente, ano_ingresso, status, coeficiente_rendimento)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO Reputacao (pontuacao, nivel)
+                VALUES (0, 'Iniciante')
+                RETURNING id_reputacao;
+                """
+            )
+            # Pega o ID da reputação recém-criada
+            new_reputation_id = cur.fetchone()['id_reputacao']
+
+            # 3. Insere o discente com o ID da reputação
+            cur.execute(
+                """
+                INSERT INTO Discente (id_usuario_discente, ano_ingresso, status, coeficiente_rendimento, id_reputacao)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING *;
                 """,
-                (discente.cpf, discente.ano_ingresso, discente.status, discente.coeficiente_rendimento)
+                (discente.cpf, discente.ano_ingresso, discente.status, discente.coeficiente_rendimento, new_reputation_id)
             )
             
+            # 4. Retorna os dados completos do discente criado
             cur.execute(
                 """
                 SELECT 
-                    usuario.cpf, usuario.nome, usuario.email, usuario.matricula, usuario.id_universidade, usuario.id_departamento,
-                    discente.ano_ingresso, discente.status, discente.coeficiente_rendimento, discente.id_reputacao
+                    u.cpf, u.nome, u.email, u.matricula, u.id_universidade, u.id_departamento,
+                    d.ano_ingresso, d.status, d.coeficiente_rendimento, d.id_reputacao
                 FROM 
-                    Usuario usuario JOIN Discente discente ON usuario.cpf = discente.id_usuario_discente
+                    Usuario u JOIN Discente d ON u.cpf = d.id_usuario_discente
                 WHERE 
-                    usuario.cpf = %s;
+                    u.cpf = %s;
                 """,
                 (discente.cpf,)
             )
@@ -61,15 +76,12 @@ def get_all_discentes():
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
-                SELECT *  
-                FROM Usuario
+                SELECT * FROM Usuario
                 JOIN 
                     Discente ON Usuario.cpf = Discente.id_usuario_discente 
                 """
             )
-            todos_discentes = cur.fetchall()
-            conn.commit()
-            return todos_discentes
+            return cur.fetchall()
     finally:
         if conn: 
             conn.close()
@@ -99,7 +111,6 @@ def update_discente(cpf: str, data: DiscenteUpdate):
     """
     Atualiza um discente, modificando as tabelas Usuario e/ou Discente.
     """
-
     update_data = data.model_dump(exclude_unset=True)
 
     if not update_data:

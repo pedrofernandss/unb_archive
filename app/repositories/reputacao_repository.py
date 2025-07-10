@@ -11,7 +11,6 @@ def create_reputacao(reputacao: ReputacaoCreate):
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-
             cur.execute(
                 """
                 INSERT INTO Reputacao (pontuacao, nivel)
@@ -20,13 +19,9 @@ def create_reputacao(reputacao: ReputacaoCreate):
                 """,
                 (reputacao.pontuacao, reputacao.nivel)
             )
-
             reputacao_cadastrada = cur.fetchone()
-            
             conn.commit()
-        
             return reputacao_cadastrada
-
     except psycopg.Error as e:
         if conn:
             conn.rollback()
@@ -44,41 +39,54 @@ def get_all_reputacoes():
     try: 
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                """
-                SELECT *  
-                FROM Reputacao
-                """
-            )
-            departamentos = cur.fetchall()
-            conn.commit()
-            return departamentos
+            cur.execute("SELECT * FROM Reputacao")
+            return cur.fetchall()
     finally:
         if conn: 
             conn.close()
 
-def update_reputacao(id: int, reputacao_data: ReputacaoUpdate):
+# MUDANÇA: Nova função para buscar reputação pelo CPF do discente
+def get_reputacao_by_cpf(cpf: str):
     """
-    Atualiza um departamento no banco de dados.
+    Busca a reputação de um discente específico pelo seu CPF.
     """
-
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT r.* FROM Reputacao r
+                JOIN Discente d ON r.id_reputacao = d.id_reputacao
+                WHERE d.id_usuario_discente = %s;
+                """,
+                (cpf,)
+            )
+            return cur.fetchone()
+    finally:
+        if conn:
+            conn.close()
 
+
+def update_reputacao(id: int, reputacao_data: ReputacaoUpdate):
+    """
+    Atualiza uma reputação no banco de dados.
+    """
+    conn = None
+    try:
+        conn = cria_conexao_db()
+        with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
                 UPDATE Reputacao
-                SET nivel = %s
+                SET pontuacao = %s, nivel = %s
                 WHERE id_reputacao = %s
                 RETURNING *;
                 """,
-                (reputacao_data.nivel, id)
+                (reputacao_data.pontuacao, reputacao_data.nivel, id)
             )
             reputacao_atualizada = cur.fetchone()
             conn.commit()
-            
             return reputacao_atualizada
     finally:
         if conn:
@@ -87,15 +95,14 @@ def update_reputacao(id: int, reputacao_data: ReputacaoUpdate):
 def delete_reputation_by_cpf(cpf: str) -> int:
     """
     Deleta a Reputacao associada a um Discente específico.
-    Retorna 1 se a reputação foi deletada, 0 caso contrário.
     """
+    # Esta função pode ser otimizada, mas mantida por enquanto
     conn = None
     try:
         conn = cria_conexao_db()
         with conn.cursor(row_factory=dict_row) as cur:
-            
             cur.execute(
-                "SELECT id_reputacao FROM Discente WHERE id_usuario = %s;",
+                "SELECT id_reputacao FROM Discente WHERE id_usuario_discente = %s;",
                 (cpf,)
             )
             linha_reputacao = cur.fetchone()
@@ -106,7 +113,7 @@ def delete_reputation_by_cpf(cpf: str) -> int:
             id_reputacao_alvo = linha_reputacao['id_reputacao']
 
             cur.execute(
-                "UPDATE Discente SET id_reputacao = NULL WHERE id_usuario = %s;",
+                "UPDATE Discente SET id_reputacao = NULL WHERE id_usuario_discente = %s;",
                 (cpf,)
             )
             
@@ -116,9 +123,7 @@ def delete_reputation_by_cpf(cpf: str) -> int:
             )
             
             linha_deletada = cur.rowcount
-            
             conn.commit()
-            
             return linha_deletada
     finally:
         if conn:
