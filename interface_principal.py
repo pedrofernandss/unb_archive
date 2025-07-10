@@ -62,6 +62,28 @@ if not st.session_state.get('user_info'):
                 except requests.exceptions.RequestException as e:
                     st.error(f"Erro de conexão com a API: {e}")
 
+    with st.form("login_form_universidade"):
+        id_universidade = st.text_input("IES da Universidade", placeholder="Digite aqui o IES da sua Universidade")
+        submitted = st.form_submit_button("Acessar")
+        
+        if submitted:
+            if not id_universidade:
+                st.error("Por favor, insira o IES da Universidade.")
+            else:
+                try:
+                    response = requests.get(f"{API_URL}/universidade/{id_universidade}")
+                    if response.status_code == 200:
+                        st.session_state['user_info'] = response.json()
+                        st.success("Universidade encontrada! Acessando o sistema...")
+                        st.rerun()
+                    elif response.status_code == 404:
+                        st.error("Universidade não encontrada. Verifique o IES digitado.")
+                    else:
+                        st.error(f"Erro ao buscar universidade: {response.status_code}")
+                        st.json(response.json())
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Erro de conexão com a API: {e}")
+
 else:
     col1, col2 = st.columns([4, 1])
     with col1:
