@@ -59,7 +59,8 @@ CREATE TABLE Docente (
     especialidade VARCHAR(100),
     qnt_validacoes INTEGER DEFAULT 0,
     qnt_marcacoes_inapropriadas INTEGER DEFAULT 0,
-    permissao_validacao BOOLEAN
+    permissao_validacao BOOLEAN,
+    FOREIGN KEY (id_usuario_docente) REFERENCES Usuario(cpf) ON DELETE CASCADE
 );
 
 CREATE TABLE Disciplina (
@@ -91,7 +92,7 @@ CREATE TABLE Avalia (
     id_docente VARCHAR(14),
     id_material INTEGER,
     valido BOOLEAN DEFAULT TRUE,
-    PRIMARY KEY (id_docente, id_material), 
+    PRIMARY KEY (id_docente, id_material),
     FOREIGN KEY (id_docente) REFERENCES Docente(id_usuario_docente) ON DELETE CASCADE,
     FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE
 );
@@ -99,10 +100,10 @@ CREATE TABLE Avalia (
 
 CREATE TABLE Compartilha_Produz (
     id_material INTEGER,
-    cpf_usuario VARCHAR(14), 
+    cpf_usuario VARCHAR(14),
     PRIMARY KEY (id_material, cpf_usuario),
     FOREIGN KEY (id_material) REFERENCES Material(id_material) ON DELETE CASCADE,
-    FOREIGN KEY (cpf_usuario) REFERENCES Usuario(cpf) ON DELETE CASCADE 
+    FOREIGN KEY (cpf_usuario) REFERENCES Usuario(cpf) ON DELETE CASCADE
 );
 
 CREATE TABLE Tag (

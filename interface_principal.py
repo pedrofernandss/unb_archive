@@ -49,7 +49,6 @@ def buscar_nome_por_id(endpoint: str, item_id: int):
         return f"Erro ao buscar ID {item_id}"
 
 # MUDANÇA: Nome da função e URL corrigidos
-@st.cache_data(ttl=60)
 def buscar_reputacao_por_cpf(cpf: str):
     """Busca os detalhes de uma reputação específica pelo CPF do usuário."""
     if not cpf:
@@ -58,7 +57,6 @@ def buscar_reputacao_por_cpf(cpf: str):
     return buscar_dados_api(f"reputacao/usuario/{cpf}")
 
 
-@st.cache_data(ttl=60) # Cache para otimizar performance
 def get_validation_status_for_material(material_id: int) -> str:
     """Busca o status de validação de um material fazendo uma chamada à API."""
     if not material_id:
@@ -158,7 +156,7 @@ else:
                         "id_disciplina": id_disciplina, "ano_semestre_ref": ano_semestre
                     }
                     try:
-                        response = requests.post(f"{API_URL}/material/", data=material_data, files=files)
+                        response = requests.post(f"{API_URL}/material/upload", data=material_data, files=files)
                         if response.status_code == 201:
                             st.success("Material enviado com sucesso!")
                         else:
@@ -174,7 +172,7 @@ else:
         def handle_rating_click(material_id, nota_clicada):
             try:
                 payload = {"data_avaliacao": date.today().isoformat(), "nota": float(nota_clicada), "id_material": material_id}
-                response = requests.post(f"{API_URL}/avaliacoes", json=payload)
+                response = requests.post(f"{API_URL}/avaliacao", json=payload)
                 response.raise_for_status()
                 st.toast(f"Sua avaliação de {nota_clicada} estrelas foi registrada!", icon="✅")
                 st.session_state.materiais_completos = []
@@ -386,7 +384,7 @@ else:
                     if st.button("Excluir meu perfil permanentemente", type="primary"):
                         try:
                             user_cpf = user_info.get('cpf')
-                            response = requests.delete(f"{API_URL}/usuarios/{cpf}")
+                            response = requests.delete(f"{API_URL}/usuarios/{user_cpf}")
                             if response.status_code == 204:
                                 st.success("Sua conta foi excluída com sucesso. Você será desconectado.")
                                 for key in st.session_state.keys():
