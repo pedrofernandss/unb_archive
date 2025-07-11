@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, Field
 from typing import Optional
 from decimal import Decimal
 from datetime import date
@@ -6,7 +6,7 @@ from datetime import date
 
 class AvaliacaoBase(BaseModel):
     data_avaliacao: date
-    nota: Decimal
+    nota: float = Field(..., ge=1, le=5)
     id_material: int
 
 

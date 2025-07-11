@@ -119,6 +119,7 @@ elif tipo_usuario == "Docente":
             cpf = st.text_input("CPF (ex: 111.222.333-44)")
             nome = st.text_input("Nome Completo")
             email = st.text_input("Email")
+            matricula = st.number_input("Matrícula", step=1, format="%d")
             senha = st.text_input("Senha", type="password")
         
         with col2:
@@ -130,14 +131,14 @@ elif tipo_usuario == "Docente":
         submitted = st.form_submit_button("Cadastrar Docente")
         
         if submitted:
-            if not all([cpf, nome, email, senha, depto_selecionado_nome, uni_selecionada_nome]):
+            if not all([cpf, nome, email, matricula, senha, depto_selecionado_nome, uni_selecionada_nome]):
                 st.error("Todos os campos são obrigatórios.")
             else:
                 id_universidade = opcoes_universidade[uni_selecionada_nome]
                 id_departamento = opcoes_departamento[depto_selecionado_nome]
 
                 docente_data = {
-                    "cpf": cpf, "nome": nome, "senha": senha, "email": email,
+                    "cpf": cpf, "nome": nome, "senha": senha, "email": email, "matricula": matricula,
                     "id_universidade": id_universidade,
                     "id_departamento": id_departamento,
                     "especialidade": especialidade,

@@ -110,14 +110,6 @@ def delete_by_cpf(cpf: str) -> int:
         conn = cria_conexao_db()
         with conn.cursor() as cur:
 
-            cur.execute("DELETE FROM Compartilha_Produz WHERE id_docente = %s;", (cpf,))
-            cur.execute("DELETE FROM Avalia WHERE id_docente = %s;", (cpf,))
-
-            cur.execute(
-                "DELETE FROM Discente WHERE id_usuario = %s;", (cpf,))
-            cur.execute(
-                "DELETE FROM Docente WHERE id_usuario = %s;", (cpf,))
-
             cur.execute("DELETE FROM Usuario WHERE cpf = %s;", (cpf,))
 
             linhas_deletadas = cur.rowcount

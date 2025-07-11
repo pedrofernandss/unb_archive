@@ -29,4 +29,3 @@ GROUP BY
     u.nome,
     u.cidade,
     u.estado;
-
