@@ -5,17 +5,15 @@ import pandas as pd
 import base64
 import math
 
-# URL base da sua API FastAPI
+
 API_URL = "http://127.0.0.1:8000/api/v1"
 
-# Mova a configuração da página para o topo do script
 st.set_page_config(
     page_title="UnB Archive",
     page_icon="📚",
     layout="wide"
 )
 
-# Inicializa o estado da sessão para evitar recarregamentos desnecessários
 if 'user_info' not in st.session_state:
     st.session_state['user_info'] = None
 if 'materiais_completos' not in st.session_state:
@@ -30,7 +28,7 @@ def buscar_dados_api(endpoint: str):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        # Retorna None em caso de erro 404 para ser tratado individualmente
+        # Retorna None em caso de erro 404 para ser tratado
         if e.response and e.response.status_code == 404:
             return None
         st.error(f"Não foi possível buscar dados de '{endpoint}': {e}")
@@ -48,15 +46,15 @@ def buscar_nome_por_id(endpoint: str, item_id: int):
     except requests.exceptions.RequestException:
         return f"Erro ao buscar ID {item_id}"
 
-# MUDANÇA: Nome da função e URL corrigidos
+@st.cache_data(ttl=60)
 def buscar_reputacao_por_cpf(cpf: str):
     """Busca os detalhes de uma reputação específica pelo CPF do usuário."""
     if not cpf:
         return None
-    # CORREÇÃO: URL ajustada para "usuario" (sem acento)
     return buscar_dados_api(f"reputacao/usuario/{cpf}")
 
 
+@st.cache_data(ttl=60) # Cache para otimizar performance
 def get_validation_status_for_material(material_id: int) -> str:
     """Busca o status de validação de um material fazendo uma chamada à API."""
     if not material_id:
@@ -155,14 +153,33 @@ else:
                         "nome": nome_material, "descricao": descricao, 
                         "id_disciplina": id_disciplina, "ano_semestre_ref": ano_semestre
                     }
-                    try:
+                    try:                       
                         response = requests.post(f"{API_URL}/material/upload", data=material_data, files=files)
-                        if response.status_code == 201:
-                            st.success("Material enviado com sucesso!")
+                        response.raise_for_status() # Lança erro se não for 2xx
+
+                        st.success("Material enviado com sucesso! Vinculando ao seu perfil...")
+                        
+                        material_criado = response.json()
+                        id_material_novo = material_criado.get('id_material')
+                        cpf_usuario_logado = user_info.get('cpf')
+
+                        if id_material_novo and cpf_usuario_logado:
+                            try:
+                                payload_associacao = {
+                                    "id_material": id_material_novo,
+                                    "cpf_usuario": cpf_usuario_logado
+                                }
+                                assoc_response = requests.post(f"{API_URL}/associacoes", json=payload_associacao)
+                                assoc_response.raise_for_status()
+                                st.success("Vínculo entre usuário e material criado com sucesso!")
+
+                            except requests.RequestException as assoc_e:
+                                st.warning(f"Material foi criado, mas falha ao criar o vínculo: {assoc_e.response.text if assoc_e.response else assoc_e}")
                         else:
-                            st.error(f"Erro no upload: {response.status_code} - {response.text}")
+                            st.warning("Material criado, mas não foi possível obter os dados para criar o vínculo.")
+
                     except requests.RequestException as e:
-                        st.error(f"Erro de conexão: {e}")
+                        st.error(f"Erro no upload: {e.response.text if e.response else e}")
                 else:
                     st.warning("Por favor, preencha todos os campos obrigatórios e selecione um arquivo.")
 
@@ -172,7 +189,7 @@ else:
         def handle_rating_click(material_id, nota_clicada):
             try:
                 payload = {"data_avaliacao": date.today().isoformat(), "nota": float(nota_clicada), "id_material": material_id}
-                response = requests.post(f"{API_URL}/avaliacao", json=payload)
+                response = requests.post(f"{API_URL}/avaliacoes", json=payload)
                 response.raise_for_status()
                 st.toast(f"Sua avaliação de {nota_clicada} estrelas foi registrada!", icon="✅")
                 st.session_state.materiais_completos = []
@@ -298,10 +315,8 @@ else:
         st.header("👤 Gerenciar Meu Perfil")
         if user_info:
             
-            # MUDANÇA: Lógica para exibir a reputação do discente
             if is_discente:
                 st.subheader("Minha Reputação")
-                # CORREÇÃO: Usa a nova função para buscar reputação pelo CPF
                 reputacao_info = buscar_reputacao_por_cpf(user_info['cpf'])
                 
                 if reputacao_info:
@@ -384,7 +399,7 @@ else:
                     if st.button("Excluir meu perfil permanentemente", type="primary"):
                         try:
                             user_cpf = user_info.get('cpf')
-                            response = requests.delete(f"{API_URL}/usuarios/{user_cpf}")
+                            response = requests.delete(f"{API_URL}/usuarios/{cpf}")
                             if response.status_code == 204:
                                 st.success("Sua conta foi excluída com sucesso. Você será desconectado.")
                                 for key in st.session_state.keys():

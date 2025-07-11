@@ -57,11 +57,10 @@ BEGIN
     END IF;
 
     -- 5. Impactar a reputação do discente que postou o material
-    -- Encontra o CPF do usuário que compartilhou o material
     SELECT cpf_usuario INTO v_cpf_discente
     FROM Compartilha_Produz
     WHERE id_material = p_id_material
-    LIMIT 1; -- Pega o primeiro que compartilhou, caso haja mais de um
+    LIMIT 1; 
 
     -- Verifica se o usuário encontrado é um discente
     IF v_cpf_discente IS NOT NULL AND EXISTS(SELECT 1 FROM Discente WHERE id_usuario_discente = v_cpf_discente) THEN
@@ -73,26 +72,22 @@ BEGIN
         WHERE d.id_usuario_discente = v_cpf_discente;
 
         IF v_id_reputacao_discente IS NOT NULL THEN
-            -- Calcula nova pontuação
             IF p_acao_valida THEN
                 v_pontuacao_atual := v_pontuacao_atual + 10;
             ELSE
                 v_pontuacao_atual := v_pontuacao_atual - 5;
             END IF;
 
-            -- Garante que a pontuação não seja negativa
             IF v_pontuacao_atual < 0 THEN
                 v_pontuacao_atual := 0;
             END IF;
 
-            -- Atualiza o nível da reputação
             IF v_pontuacao_atual >= 100 THEN v_nivel_atual := 'Expert';
             ELSIF v_pontuacao_atual >= 50 THEN v_nivel_atual := 'Avançado';
             ELSIF v_pontuacao_atual >= 10 THEN v_nivel_atual := 'Intermediário';
             ELSE v_nivel_atual := 'Básico';
             END IF;
 
-            -- Atualiza a tabela Reputacao
             UPDATE Reputacao
             SET pontuacao = v_pontuacao_atual, nivel = v_nivel_atual
             WHERE id_reputacao = v_id_reputacao_discente;
